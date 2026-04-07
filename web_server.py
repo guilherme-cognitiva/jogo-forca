@@ -22,9 +22,9 @@ games = {}              # game_id -> GameState
 waiting_queue = []      # list of player_ids
 sid_to_player = {}      # socket sid -> player_id
 player_to_sid = {}      # player_id -> socket sid
-last_updated = [0.0]    # mutable container for timestamp
+last_updated = [0.0]
 
-p2p_manager = None      # set in main() when peers are configured
+p2p_manager = None
 
 
 # ---------------------------------------------------------------------------
@@ -32,33 +32,34 @@ p2p_manager = None      # set in main() when peers are configured
 # ---------------------------------------------------------------------------
 
 def _sync_state():
-    """Broadcast current state to P2P peers. Must be called WITH state_lock held."""
+    """
+    Deve ser chamado COM o state_lock HELD.
+    Tira snapshot do estado (rapido) e dispara o broadcast em thread separada,
+    para nao bloquear o lock durante a conexao TCP ao peer.
+    """
     if p2p_manager is None:
         return
     last_updated[0] = time.time()
-    state_dict = {
+    snapshot = {
         'last_updated': last_updated[0],
         'games': {k: v.to_dict() for k, v in games.items()},
         'waiting_queue': list(waiting_queue),
     }
-    p2p_manager.broadcast_state(state_dict)
+    # Broadcast em background — nao bloqueia o state_lock
+    threading.Thread(target=p2p_manager.broadcast_state, args=(snapshot,), daemon=True).start()
 
 
 def on_p2p_state_received(state_dict):
-    """Called by P2PManager when a peer sends us its state."""
     with state_lock:
         remote_time = state_dict.get('last_updated', 0)
         if remote_time <= last_updated[0]:
-            return  # We already have a newer state
-
+            return
         last_updated[0] = remote_time
         games.clear()
         games.update({k: GameState.from_dict(v) for k, v in state_dict.get('games', {}).items()})
         waiting_queue.clear()
         waiting_queue.extend(state_dict.get('waiting_queue', []))
         logging.info("Estado sincronizado via P2P.")
-
-        # Notify every locally connected client with updated state
         for player_id, sid in list(player_to_sid.items()):
             if player_id in waiting_queue:
                 pos = waiting_queue.index(player_id) + 1
@@ -81,6 +82,7 @@ def _build_game_state_msg(game, player_id):
         'word_state': game_engine.get_masked_word(game.word, player.guessed_letters),
         'wrong_count': player.wrong_count,
         'guessed': sorted(list(player.guessed_letters)),
+        'hint_used': player.hint_used,
     }
     if player.opponent_id:
         opponent = game.players.get(player.opponent_id)
@@ -92,7 +94,6 @@ def _build_game_state_msg(game, player_id):
             if game.status == 'finished' or player.status in ['won', 'lost']:
                 msg['full_word'] = game.word
                 msg['winner_id'] = game.winner_id
-    msg['hint_used'] = player.hint_used
     return msg
 
 
@@ -108,7 +109,7 @@ def notify_all_in_game(game):
 
 
 def check_matchmaking():
-    """Must be called WITH state_lock held."""
+    """Deve ser chamado COM state_lock held."""
     while len(waiting_queue) >= 2:
         p1_id = waiting_queue.pop(0)
         p2_id = waiting_queue.pop(0)
@@ -134,28 +135,30 @@ def index():
 @socketio.on('connect')
 def on_connect():
     sid = flask_request.sid
-    # Client sends its stored player_id (from localStorage) for reconnection
     player_id = flask_request.args.get('player_id') or str(uuid.uuid4())
 
     with state_lock:
         sid_to_player[sid] = player_id
         player_to_sid[player_id] = sid
 
-        # Check if this player is reconnecting to an active game
+        # Reconecta apenas a jogos ATIVOS (nao a jogos ja finalizados)
         reconnected = False
         for game in games.values():
-            if player_id in game.players:
-                player = game.players[player_id]
-                if player.status == 'disconnected':
-                    # Restore them to the game
-                    player.status = 'playing'
-                    player.disconnect_time = None
-                    logging.info(f"Jogador {player_id[:8]} reconectou ao jogo.")
-                    _sync_state()
-                reconnected = True
-                emit('connected', {'player_id': player_id})
-                _emit_game_state(player_id, game, sid)
+            if player_id not in game.players:
+                continue
+            if game.status != 'playing':
+                # Jogo finalizado: ignora e deixa o jogador entrar na fila
                 break
+            player = game.players[player_id]
+            if player.status == 'disconnected':
+                player.status = 'playing'
+                player.disconnect_time = None
+                logging.info(f"Jogador {player_id[:8]} reconectou ao jogo.")
+                _sync_state()
+            reconnected = True
+            emit('connected', {'player_id': player_id})
+            _emit_game_state(player_id, game, sid)
+            break
 
         if not reconnected:
             if player_id not in waiting_queue:
@@ -249,10 +252,9 @@ threading.Thread(target=_timeout_checker, daemon=True).start()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Jogo da Forca - Servidor Web")
-    parser.add_argument('--port', type=int, default=5000, help="Porta HTTP para os clientes")
-    parser.add_argument('--sync-port', type=int, default=6000, help="Porta P2P para sync entre servidores")
-    parser.add_argument('--peers', type=str, default="",
-                        help="Lista de peers separados por virgula: host:sync_port (ex: 1.2.3.4:6000)")
+    parser.add_argument('--port', type=int, default=5000)
+    parser.add_argument('--sync-port', type=int, default=6000)
+    parser.add_argument('--peers', type=str, default="")
     args = parser.parse_args()
 
     peer_list = []
