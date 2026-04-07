@@ -3,266 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo da Forca Distribuido</title>
+    <title>Jogo da Forca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red:    #ff4365;
+            --purple: #9b59ff;
+            --green:  #2ecc71;
+            --bg:     #0d0d1a;
+            --card:   #13132b;
+            --border: #1e1e40;
+            --text:   #e0e0f0;
+            --muted:  #555580;
+        }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: #1a1a2e;
-            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 24px 16px;
         }
 
-        h1 {
-            color: #e94560;
-            margin-bottom: 6px;
-            font-size: 1.6rem;
+        /* Header */
+        header {
             text-align: center;
-            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            color: #fff;
         }
 
+        header p {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* Status bar */
         #status-bar {
-            margin-bottom: 20px;
-            color: #606080;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
         }
 
-        /* --- Waiting screen --- */
+        /* ===================== WAITING SCREEN ===================== */
         #waiting-screen {
-            text-align: center;
-            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 60px;
         }
 
-        #waiting-screen h2 {
-            color: #e94560;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-        }
-
-        .spinner {
-            display: block;
-            width: 44px;
-            height: 44px;
-            border: 4px solid #333;
-            border-top-color: #e94560;
+        .waiting-icon {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 20px;
+            background: linear-gradient(135deg, rgba(255,67,101,0.15), rgba(155,89,255,0.15));
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
+
+        .waiting-icon::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--red);
+            border-right-color: var(--purple);
+            animation: spin 1.2s linear infinite;
+        }
+
+        .waiting-icon svg { width: 36px; height: 36px; opacity: 0.6; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        #waiting-screen p {
-            color: #a0a0c0;
-            font-size: 0.9rem;
+        #waiting-screen h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
         }
 
-        /* --- Game screen --- */
+        #queue-pos {
+            font-size: 0.85rem;
+            color: var(--muted);
+            padding: 8px 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+        }
+
+        .waiting-dots span {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            margin: 0 3px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        .waiting-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .waiting-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* ===================== GAME SCREEN ===================== */
         #game-screen {
             display: none;
             width: 100%;
-            max-width: 940px;
+            max-width: 980px;
         }
 
         .game-panels {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             flex-wrap: wrap;
             justify-content: center;
         }
 
+        /* Panel */
         .panel {
-            background: #16213e;
-            border: 2px solid #0f3460;
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 20px;
             flex: 1;
             min-width: 300px;
-            max-width: 440px;
+            max-width: 460px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
         }
 
-        .panel.you    { border-color: #e94560; }
-        .panel.opponent { border-color: #533483; }
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: 20px 20px 0 0;
+        }
 
-        .panel h2 {
-            text-align: center;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
+        .panel.you::before      { background: var(--red); }
+        .panel.opponent::before { background: var(--purple); }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .panel-label {
+            font-size: 0.7rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 3px;
         }
 
-        .panel.you h2       { color: #e94560; }
-        .panel.opponent h2  { color: #a080d0; }
+        .panel.you .panel-label    { color: var(--red); }
+        .panel.opponent .panel-label { color: var(--purple); }
 
-        /* SVG hangman */
+        .error-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .panel.you .error-badge    { background: rgba(255,67,101,0.15); color: var(--red); }
+        .panel.opponent .error-badge { background: rgba(155,89,255,0.15); color: var(--purple); }
+
+        /* Hangman SVG */
         .hangman-wrap {
             display: flex;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .hangman-svg { width: 160px; height: 180px; }
+        .hangman-svg { width: 150px; height: 170px; }
 
-        /* Word display */
+        /* Word */
         .word-display {
-            font-size: 1.8rem;
-            letter-spacing: 10px;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            min-height: 48px;
+        }
+
+        .letter-box {
+            width: 36px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 900;
+            border-bottom: 2px solid #333;
+            transition: all 0.3s;
+        }
+
+        .letter-box.revealed {
             color: #fff;
-            min-height: 2.4rem;
-            margin-bottom: 8px;
+            border-bottom-color: var(--red);
+            animation: pop 0.3s ease;
         }
 
-        .panel.opponent .word-display {
-            font-size: 1.3rem;
-            letter-spacing: 6px;
+        .panel.opponent .letter-box.revealed { border-bottom-color: var(--purple); }
+
+        @keyframes pop {
+            0% { transform: scale(1.4); }
+            100% { transform: scale(1); }
         }
 
-        /* Error count */
-        .errors {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #808090;
-            margin-bottom: 10px;
-        }
-
-        .errors .count { color: #e94560; font-weight: bold; }
+        .panel.opponent .letter-box { width: 28px; height: 36px; font-size: 1.1rem; }
 
         /* Guessed letters */
+        .guessed-section {
+            margin-bottom: 14px;
+        }
+
+        .guessed-title {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
         .guessed-letters {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            justify-content: center;
-            min-height: 26px;
-            margin-bottom: 12px;
+            gap: 5px;
+            min-height: 28px;
         }
 
         .chip {
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.2s;
         }
 
-        .chip.hit  { background: #1a4d2a; color: #4ade80; }
-        .chip.miss { background: #4d1a1a; color: #f87171; }
+        .chip.hit  { background: rgba(46,204,113,0.2); color: var(--green); border: 1px solid rgba(46,204,113,0.4); }
+        .chip.miss { background: rgba(255,67,101,0.15); color: #ff6b6b; border: 1px solid rgba(255,67,101,0.3); }
 
         /* Input */
         .input-area {
             display: flex;
             gap: 8px;
+            margin-top: 4px;
         }
 
         #letter-input {
             flex: 1;
-            padding: 10px;
-            background: #0f3460;
-            border: 1px solid #e94560;
-            border-radius: 6px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 1.3rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
             text-align: center;
             text-transform: uppercase;
             outline: none;
+            transition: border-color 0.2s;
         }
 
-        #letter-input:disabled { border-color: #444; }
+        #letter-input:focus { border-color: var(--red); }
+        #letter-input:disabled { opacity: 0.3; }
 
         #guess-btn {
-            padding: 10px 18px;
-            background: #e94560;
+            padding: 12px 20px;
+            background: var(--red);
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.15s;
+            transition: opacity 0.15s, transform 0.1s;
+            letter-spacing: 1px;
         }
 
-        #guess-btn:hover    { background: #c73450; }
-        #guess-btn:disabled { background: #444; cursor: not-allowed; }
+        #guess-btn:hover    { opacity: 0.9; transform: translateY(-1px); }
+        #guess-btn:active   { transform: translateY(0); }
+        #guess-btn:disabled { background: #333; cursor: not-allowed; transform: none; }
 
-        /* Opponent status badge */
+        /* Opponent badge */
         .opp-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
             text-align: center;
-            font-size: 0.78rem;
-            padding: 4px 10px;
-            border-radius: 4px;
-            margin-bottom: 8px;
         }
 
-        .opp-badge.disconnected { background: #4d3300; color: #fbbf24; }
-        .opp-badge.won          { background: #1a4d2a; color: #4ade80; }
-        .opp-badge.lost         { background: #4d1a1a; color: #f87171; }
+        .opp-badge.disconnected { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .opp-badge.won          { background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+        .opp-badge.lost         { background: rgba(255,67,101,0.1); color: var(--red); border: 1px solid rgba(255,67,101,0.3); }
 
-        /* End screen */
-        #end-screen {
+        /* Divider */
+        .vs-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: var(--muted);
+            padding: 0 4px;
+            align-self: center;
+        }
+
+        /* End overlay */
+        #end-overlay {
             display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #end-overlay.show { display: flex; }
+
+        .end-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 40px;
             text-align: center;
-            margin-top: 24px;
-            padding: 20px;
-            background: #16213e;
-            border-radius: 12px;
-            border: 2px solid #0f3460;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .end-card .trophy {
+            font-size: 4rem;
+            margin-bottom: 16px;
         }
 
         #end-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 2rem;
+            font-weight: 900;
             letter-spacing: 2px;
+            margin-bottom: 8px;
         }
 
         #end-word {
-            color: #a0a0c0;
             font-size: 0.9rem;
-            margin-bottom: 18px;
+            color: var(--muted);
+            margin-bottom: 32px;
         }
 
         #play-again-btn {
-            padding: 10px 28px;
-            background: transparent;
-            border: 2px solid #e94560;
-            border-radius: 8px;
-            color: #e94560;
-            font-family: 'Courier New', monospace;
-            font-size: 0.95rem;
+            padding: 14px 36px;
+            background: var(--red);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.15s;
+            transition: opacity 0.2s, transform 0.1s;
+            letter-spacing: 1px;
         }
 
-        #play-again-btn:hover { background: #e94560; color: #fff; }
+        #play-again-btn:hover  { opacity: 0.9; transform: translateY(-2px); }
+        #play-again-btn:active { transform: translateY(0); }
 
         @media (max-width: 680px) {
-            .panel { min-width: 280px; }
-            .word-display { font-size: 1.4rem; letter-spacing: 7px; }
+            header h1 { font-size: 1.4rem; }
+            .panel { min-width: 280px; padding: 18px 14px; }
+            .vs-divider { display: none; }
         }
     </style>
 </head>
 <body>
 
-<h1>Jogo da Forca: Modo Corrida</h1>
+<header>
+    <h1>Jogo da Forca</h1>
+    <p>MODO CORRIDA — 2 JOGADORES</p>
+</header>
 <div id="status-bar">Conectando...</div>
 
 <!-- Waiting -->
 <div id="waiting-screen">
+    <div class="waiting-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+    </div>
     <h2>Aguardando Oponente</h2>
-    <span class="spinner"></span>
-    <p id="queue-pos">Procurando adversario...</p>
+    <div id="queue-pos">Procurando adversario...</div>
+    <div class="waiting-dots">
+        <span></span><span></span><span></span>
+    </div>
 </div>
 
 <!-- Game -->
@@ -271,62 +451,75 @@
 
         <!-- Your panel -->
         <div class="panel you">
-            <h2>Voce</h2>
+            <div class="panel-header">
+                <span class="panel-label">Voce</span>
+                <span class="error-badge" id="your-error-badge">0 / 6 erros</span>
+            </div>
             <div class="hangman-wrap">
-                <svg class="hangman-svg" id="your-hangman" viewBox="0 0 160 180">
-                    <!-- gallows -->
-                    <line x1="5"   y1="172" x2="155" y2="172" stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="35"  y1="172" x2="35"  y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="35"  y1="8"   x2="110" y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="110" y1="8"   x2="110" y2="32"  stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <!-- body parts -->
-                    <circle id="y-head" cx="110" cy="46"  r="14" stroke="#e94560" stroke-width="3" fill="none"     style="display:none"/>
-                    <line   id="y-body" x1="110" y1="60"  x2="110" y2="108"       stroke="#e94560" stroke-width="3" style="display:none"/>
-                    <line   id="y-larm" x1="110" y1="74"  x2="84"  y2="96"        stroke="#e94560" stroke-width="3" style="display:none"/>
-                    <line   id="y-rarm" x1="110" y1="74"  x2="136" y2="96"        stroke="#e94560" stroke-width="3" style="display:none"/>
-                    <line   id="y-lleg" x1="110" y1="108" x2="84"  y2="140"       stroke="#e94560" stroke-width="3" style="display:none"/>
-                    <line   id="y-rleg" x1="110" y1="108" x2="136" y2="140"       stroke="#e94560" stroke-width="3" style="display:none"/>
+                <svg class="hangman-svg" id="your-hangman" viewBox="0 0 160 170">
+                    <line x1="5"   y1="163" x2="155" y2="163" stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="163" x2="35"  y2="6"   stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="6"   x2="110" y2="6"   stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="110" y1="6"   x2="110" y2="30"  stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <circle id="y-head" cx="110" cy="44"  r="14" stroke="var(--red)" stroke-width="2.5" fill="none" style="display:none"/>
+                    <line   id="y-body" x1="110" y1="58"  x2="110" y2="106"  stroke="var(--red)" stroke-width="2.5" style="display:none"/>
+                    <line   id="y-larm" x1="110" y1="72"  x2="82"  y2="94"   stroke="var(--red)" stroke-width="2.5" style="display:none"/>
+                    <line   id="y-rarm" x1="110" y1="72"  x2="138" y2="94"   stroke="var(--red)" stroke-width="2.5" style="display:none"/>
+                    <line   id="y-lleg" x1="110" y1="106" x2="82"  y2="138"  stroke="var(--red)" stroke-width="2.5" style="display:none"/>
+                    <line   id="y-rleg" x1="110" y1="106" x2="138" y2="138"  stroke="var(--red)" stroke-width="2.5" style="display:none"/>
                 </svg>
             </div>
             <div class="word-display" id="your-word"></div>
-            <div class="errors">Erros: <span class="count" id="your-errors">0</span> / 6</div>
-            <div class="guessed-letters" id="your-guessed"></div>
+            <div class="guessed-section">
+                <div class="guessed-title">Letras tentadas</div>
+                <div class="guessed-letters" id="your-guessed"></div>
+            </div>
             <div class="input-area">
-                <input type="text" id="letter-input" maxlength="1" placeholder="A-Z" autocomplete="off" spellcheck="false"/>
-                <button id="guess-btn">Enviar</button>
+                <input type="text" id="letter-input" maxlength="1" placeholder="A — Z" autocomplete="off" spellcheck="false"/>
+                <button id="guess-btn">ENVIAR</button>
             </div>
         </div>
+
+        <div class="vs-divider">VS</div>
 
         <!-- Opponent panel -->
         <div class="panel opponent">
-            <h2>Oponente</h2>
+            <div class="panel-header">
+                <span class="panel-label">Oponente</span>
+                <span class="error-badge" id="opp-error-badge">0 / 6 erros</span>
+            </div>
             <div id="opp-badge-wrap"></div>
             <div class="hangman-wrap">
-                <svg class="hangman-svg" id="opp-hangman" viewBox="0 0 160 180">
-                    <line x1="5"   y1="172" x2="155" y2="172" stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="35"  y1="172" x2="35"  y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="35"  y1="8"   x2="110" y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <line x1="110" y1="8"   x2="110" y2="32"  stroke="#666" stroke-width="4" stroke-linecap="round"/>
-                    <circle id="o-head" cx="110" cy="46"  r="14" stroke="#a080d0" stroke-width="3" fill="none"     style="display:none"/>
-                    <line   id="o-body" x1="110" y1="60"  x2="110" y2="108"       stroke="#a080d0" stroke-width="3" style="display:none"/>
-                    <line   id="o-larm" x1="110" y1="74"  x2="84"  y2="96"        stroke="#a080d0" stroke-width="3" style="display:none"/>
-                    <line   id="o-rarm" x1="110" y1="74"  x2="136" y2="96"        stroke="#a080d0" stroke-width="3" style="display:none"/>
-                    <line   id="o-lleg" x1="110" y1="108" x2="84"  y2="140"       stroke="#a080d0" stroke-width="3" style="display:none"/>
-                    <line   id="o-rleg" x1="110" y1="108" x2="136" y2="140"       stroke="#a080d0" stroke-width="3" style="display:none"/>
+                <svg class="hangman-svg" id="opp-hangman" viewBox="0 0 160 170">
+                    <line x1="5"   y1="163" x2="155" y2="163" stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="163" x2="35"  y2="6"   stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="6"   x2="110" y2="6"   stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="110" y1="6"   x2="110" y2="30"  stroke="#2a2a4a" stroke-width="4" stroke-linecap="round"/>
+                    <circle id="o-head" cx="110" cy="44"  r="14" stroke="var(--purple)" stroke-width="2.5" fill="none" style="display:none"/>
+                    <line   id="o-body" x1="110" y1="58"  x2="110" y2="106"  stroke="var(--purple)" stroke-width="2.5" style="display:none"/>
+                    <line   id="o-larm" x1="110" y1="72"  x2="82"  y2="94"   stroke="var(--purple)" stroke-width="2.5" style="display:none"/>
+                    <line   id="o-rarm" x1="110" y1="72"  x2="138" y2="94"   stroke="var(--purple)" stroke-width="2.5" style="display:none"/>
+                    <line   id="o-lleg" x1="110" y1="106" x2="82"  y2="138"  stroke="var(--purple)" stroke-width="2.5" style="display:none"/>
+                    <line   id="o-rleg" x1="110" y1="106" x2="138" y2="138"  stroke="var(--purple)" stroke-width="2.5" style="display:none"/>
                 </svg>
             </div>
             <div class="word-display" id="opp-word"></div>
-            <div class="errors">Erros: <span class="count" id="opp-errors">0</span> / 6</div>
-            <div class="guessed-letters" id="opp-guessed"></div>
+            <div class="guessed-section">
+                <div class="guessed-title">Letras tentadas</div>
+                <div class="guessed-letters" id="opp-guessed"></div>
+            </div>
         </div>
 
     </div>
+</div>
 
-    <!-- End screen -->
-    <div id="end-screen">
+<!-- End overlay -->
+<div id="end-overlay">
+    <div class="end-card">
+        <div class="trophy" id="end-trophy"></div>
         <div id="end-title"></div>
         <div id="end-word"></div>
-        <button id="play-again-btn" onclick="location.reload()">Jogar Novamente</button>
+        <button id="play-again-btn" onclick="location.reload()">JOGAR NOVAMENTE</button>
     </div>
 </div>
 
@@ -338,8 +531,6 @@
     let gameOver = false;
     let socket = null;
 
-    // --- Failover: ?servers=http://vps1:5000,http://vps2:5000
-    // Se nao especificado, usa o proprio servidor que serviu a pagina.
     const urlParams = new URLSearchParams(window.location.search);
     const serversParam = urlParams.get('servers');
     const SERVER_LIST = serversParam
@@ -347,8 +538,6 @@
         : [window.location.origin];
 
     let serverIndex = 0;
-
-    // player_id persiste no localStorage para reconexao apos failover
     let playerId = localStorage.getItem('hangman_player_id') || '';
 
     // ---------------------------------------------------------------------------
@@ -357,34 +546,30 @@
 
     function connectToServer() {
         const url = SERVER_LIST[serverIndex];
-        setStatus('Conectando a ' + url + '...');
+        setStatus('Conectando...');
 
-        if (socket) {
-            socket.off();
-            socket.disconnect();
-        }
+        if (socket) { socket.off(); socket.disconnect(); }
 
         socket = io(url, {
             query: { player_id: playerId },
-            reconnection: false,   // gerenciamos manualmente para trocar de servidor
+            reconnection: false,
             timeout: 5000,
         });
 
         socket.on('connect', () => {
             const label = SERVER_LIST.length > 1
-                ? ' (servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length + ')'
+                ? ' · servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length
                 : '';
-            setStatus('Conectado a ' + url + label);
+            setStatus('Conectado' + label);
         });
 
         socket.on('disconnect', reason => {
             if (gameOver) return;
-            setStatus('Conexao perdida (' + reason + '). Tentando proximo servidor...');
+            setStatus('Reconectando...');
             switchServer();
         });
 
         socket.on('connect_error', () => {
-            setStatus('Falha em ' + url + '. Tentando proximo servidor...');
             switchServer();
         });
 
@@ -392,16 +577,16 @@
             playerId = player_id;
             localStorage.setItem('hangman_player_id', player_id);
             const label = SERVER_LIST.length > 1
-                ? ' (servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length + ')'
+                ? ' · servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length
                 : '';
-            setStatus('Conectado a ' + url + ' | ID: ' + player_id.substring(0, 8) + label);
+            setStatus('Online · ' + player_id.substring(0, 8) + label);
         });
 
         socket.on('waiting', ({ position }) => {
-            document.getElementById('waiting-screen').style.display = 'block';
+            document.getElementById('waiting-screen').style.display = 'flex';
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('queue-pos').textContent =
-                'Posicao na fila: ' + position + ' — aguardando adversario...';
+                'Posicao na fila: ' + position;
         });
 
         socket.on('game_state', handleGameState);
@@ -427,6 +612,18 @@
         });
     }
 
+    function renderWord(containerId, wordState, fullWord) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = '';
+        const letters = wordState.split(' ');
+        letters.forEach(l => {
+            const box = document.createElement('div');
+            box.className = 'letter-box' + (l !== '_' ? ' revealed' : '');
+            box.textContent = l !== '_' ? l : '';
+            el.appendChild(box);
+        });
+    }
+
     function renderGuessed(containerId, letters, word) {
         const el = document.getElementById(containerId);
         el.innerHTML = '';
@@ -445,17 +642,18 @@
         document.getElementById('game-screen').style.display = 'block';
 
         if (state.full_word) gameWord = state.full_word;
+        const word = gameWord || state.word_state.replace(/ /g, '');
 
         // Seu painel
-        document.getElementById('your-word').textContent = state.word_state;
-        document.getElementById('your-errors').textContent = state.wrong_count;
+        renderWord('your-word', state.word_state, word);
+        document.getElementById('your-error-badge').textContent = state.wrong_count + ' / 6 erros';
         updateHangman(Y_PARTS, state.wrong_count);
-        renderGuessed('your-guessed', state.guessed || [], gameWord || state.word_state.replace(/ /g, ''));
+        renderGuessed('your-guessed', state.guessed || [], word);
 
         // Painel do oponente
         if (state.opponent_word_state !== undefined) {
-            document.getElementById('opp-word').textContent = state.opponent_word_state;
-            document.getElementById('opp-errors').textContent = state.opponent_wrong;
+            renderWord('opp-word', state.opponent_word_state, gameWord || '');
+            document.getElementById('opp-error-badge').textContent = state.opponent_wrong + ' / 6 erros';
             updateHangman(O_PARTS, state.opponent_wrong);
             renderGuessed('opp-guessed', state.opponent_guessed || [], gameWord || '');
         }
@@ -478,16 +676,20 @@
             document.getElementById('guess-btn').disabled = true;
             document.getElementById('letter-input').disabled = true;
 
-            const endScreen = document.getElementById('end-screen');
-            const endTitle  = document.getElementById('end-title');
-            endScreen.style.display = 'block';
+            const overlay  = document.getElementById('end-overlay');
+            const title    = document.getElementById('end-title');
+            const trophy   = document.getElementById('end-trophy');
+
+            overlay.classList.add('show');
 
             if (state.status === 'won') {
-                endTitle.style.color = '#4ade80';
-                endTitle.textContent = 'VOCE VENCEU!';
+                trophy.textContent = 'W';
+                title.style.color = 'var(--green)';
+                title.textContent = 'VOCE VENCEU!';
             } else {
-                endTitle.style.color = '#f87171';
-                endTitle.textContent = 'VOCE PERDEU!';
+                trophy.textContent = 'L';
+                title.style.color = 'var(--red)';
+                title.textContent = 'VOCE PERDEU!';
             }
 
             if (state.full_word) {
@@ -512,18 +714,13 @@
     }
 
     document.getElementById('guess-btn').addEventListener('click', sendGuess);
-
     document.getElementById('letter-input').addEventListener('keydown', e => {
         if (e.key === 'Enter') sendGuess();
     });
-
     document.getElementById('letter-input').addEventListener('input', e => {
         e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
     });
 
-    // ---------------------------------------------------------------------------
-    // Start
-    // ---------------------------------------------------------------------------
     connectToServer();
 </script>
 
