@@ -19,6 +19,7 @@
             --red:      #e84545;
             --green:    #2db87a;
             --yellow:   #e8a835;
+            --purple:   #9b7fe8;
         }
 
         body {
@@ -127,14 +128,12 @@
         #game-screen {
             display: none;
             flex: 1;
-            overflow: hidden;
         }
 
         .game-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            height: 100%;
-            min-height: calc(100vh - 57px);
+            min-height: 480px;
         }
 
         /* Left: hangman */
@@ -406,6 +405,122 @@
 
         #play-again-btn:hover { opacity: 0.85; }
 
+        /* ===================== OPPONENT PANEL ===================== */
+        #opp-panel {
+            display: none;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            padding: 20px 28px 24px;
+        }
+
+        .opp-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .opp-panel-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--purple);
+        }
+
+        .opp-panel-lives { display: flex; gap: 5px; }
+
+        .opp-panel-life {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid var(--muted);
+            background: var(--border);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .opp-panel-life.lost { background: var(--red); border-color: var(--red); }
+
+        .opp-panel-err {
+            font-size: 0.7rem;
+            color: var(--muted2);
+        }
+
+        .opp-word-row {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .opp-letter-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .opp-letter-char {
+            width: 28px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--purple);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .opp-letter-char.show { opacity: 1; }
+
+        .opp-letter-line {
+            width: 28px;
+            height: 2px;
+            background: var(--muted);
+        }
+
+        .opp-letters-section {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .opp-letter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .opp-letter-group-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted2);
+        }
+
+        .opp-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            min-height: 24px;
+        }
+
+        .opp-chip {
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .opp-chip.hit  { background: rgba(45,184,122,0.15); color: var(--green); border: 1px solid rgba(45,184,122,0.3); }
+        .opp-chip.miss { background: transparent; color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
+
         /* Responsive */
         @media (max-width: 700px) {
             .game-layout { grid-template-columns: 1fr; }
@@ -496,6 +611,26 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Opponent full panel -->
+    <div id="opp-panel">
+        <div class="opp-panel-header">
+            <span class="opp-panel-label">Progresso do Oponente</span>
+            <div class="opp-panel-lives" id="opp-panel-lives"></div>
+            <span class="opp-panel-err" id="opp-panel-err"></span>
+        </div>
+        <div class="opp-word-row" id="opp-word-row"></div>
+        <div class="opp-letters-section">
+            <div class="opp-letter-group">
+                <span class="opp-letter-group-label">Acertos</span>
+                <div class="opp-chips" id="opp-chips-hit"></div>
+            </div>
+            <div class="opp-letter-group">
+                <span class="opp-letter-group-label">Erros</span>
+                <div class="opp-chips" id="opp-chips-miss"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -639,6 +774,70 @@
         });
     }
 
+    function renderOppPanel(state) {
+        const panel = document.getElementById('opp-panel');
+        panel.style.display = 'block';
+
+        // Lives
+        const livesEl = document.getElementById('opp-panel-lives');
+        livesEl.innerHTML = '';
+        const wrong = state.opponent_wrong || 0;
+        for (let i = 0; i < 6; i++) {
+            const d = document.createElement('div');
+            d.className = 'opp-panel-life' + (i < wrong ? ' lost' : '');
+            livesEl.appendChild(d);
+        }
+        document.getElementById('opp-panel-err').textContent = wrong + ' de 6 erros';
+
+        // Word slots
+        const wordRow = document.getElementById('opp-word-row');
+        const letters = (state.opponent_word_state || '').split(' ');
+        if (wordRow.children.length !== letters.length) {
+            wordRow.innerHTML = '';
+            letters.forEach(() => {
+                const slot = document.createElement('div');
+                slot.className = 'opp-letter-slot';
+                const ch   = document.createElement('div');
+                ch.className = 'opp-letter-char';
+                const line = document.createElement('div');
+                line.className = 'opp-letter-line';
+                slot.appendChild(ch);
+                slot.appendChild(line);
+                wordRow.appendChild(slot);
+            });
+        }
+        letters.forEach((l, i) => {
+            const ch = wordRow.children[i].querySelector('.opp-letter-char');
+            if (l !== '_') { ch.textContent = l; ch.classList.add('show'); }
+            else            { ch.textContent = ''; ch.classList.remove('show'); }
+        });
+
+        // Chips — split guessed into hits/misses
+        // We need the word to classify; use gameWord if available
+        const knownWord = gameWord || '';
+        const guessed   = state.opponent_guessed || [];
+        const hitChips  = document.getElementById('opp-chips-hit');
+        const missChips = document.getElementById('opp-chips-miss');
+        hitChips.innerHTML  = '';
+        missChips.innerHTML = '';
+        guessed.forEach(l => {
+            const chip = document.createElement('span');
+            chip.className = 'opp-chip';
+            chip.textContent = l;
+            if (knownWord && knownWord.includes(l)) {
+                chip.classList.add('hit');
+                hitChips.appendChild(chip);
+            } else if (knownWord) {
+                chip.classList.add('miss');
+                missChips.appendChild(chip);
+            } else {
+                // word unknown yet — show in hit section neutral
+                chip.classList.add('hit');
+                hitChips.appendChild(chip);
+            }
+        });
+    }
+
     function updateOppTopbar(wrongCount, wordState) {
         const bar = document.getElementById('opp-topbar');
         bar.style.display = 'flex';
@@ -680,9 +879,10 @@
             hintSub.textContent = 'Dica ja utilizada';
         }
 
-        // Opponent topbar
+        // Opponent topbar + full panel
         if (state.opponent_word_state !== undefined) {
             updateOppTopbar(state.opponent_wrong, state.opponent_word_state);
+            renderOppPanel(state);
         }
 
         // Opponent strip

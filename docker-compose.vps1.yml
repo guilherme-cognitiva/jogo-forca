@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  jogo-forca:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      bash -c "pip install flask flask-socketio -q &&
+               python3 web_server.py --port 5000 --sync-port 6100 --peers 185.225.22.164:6100"
+    ports:
+      - "127.0.0.1:5000:5000"
+      - "6100:6100"
+    restart: unless-stopped
