@@ -84,6 +84,7 @@ def _build_game_state_msg(game, player_id):
         'wrong_count': player.wrong_count,
         'guessed': sorted(list(player.guessed_letters)),
         'hint_used': player.hint_used,
+        'theme': player.theme,
     }
     if player.opponent_id:
         opponent = game.players.get(player.opponent_id)
@@ -92,6 +93,7 @@ def _build_game_state_msg(game, player_id):
             msg['opponent_status'] = opponent.status
             msg['opponent_word_state'] = game_engine.get_masked_word(opponent.word, opponent.guessed_letters)
             msg['opponent_guessed'] = sorted(list(opponent.guessed_letters))
+            msg['opponent_theme'] = opponent.theme
             if game.status == 'finished' or player.status in ['won', 'lost']:
                 msg['full_word'] = player.word
                 msg['winner_id'] = game.winner_id

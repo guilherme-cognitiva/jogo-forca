@@ -215,6 +215,22 @@
         .side-status.won  { color: var(--green); background: rgba(0,204,116,0.1); border: 1px solid rgba(0,204,116,0.25); }
         .side-status.lost { color: var(--red);   background: rgba(255,64,64,0.1); border: 1px solid rgba(255,64,64,0.25); }
 
+        /* Theme tag */
+        .theme-tag {
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--dim);
+            padding: 3px 10px;
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            background: var(--card);
+            display: none;
+        }
+        .theme-tag.visible { display: block; }
+        .theme-tag.opp { border-color: rgba(68,136,255,0.2); color: rgba(68,136,255,0.6); }
+
         /* Hint */
         .hint-wrap {
             display: flex;
@@ -507,6 +523,7 @@
                 </svg>
             </div>
 
+            <div class="theme-tag" id="your-theme"></div>
             <div class="word-row you-word" id="your-word"></div>
             <div class="side-status" id="your-status-badge"></div>
 
@@ -541,6 +558,7 @@
                 </svg>
             </div>
 
+            <div class="theme-tag opp" id="opp-theme"></div>
             <div class="word-row opp-word" id="opp-word"></div>
             <div class="side-status" id="opp-status-badge"></div>
 
@@ -727,6 +745,18 @@
         updateHangman(Y_PARTS, wrongNow, doShake);
         updateDots('your-err-dots', wrongNow, 'on-you');
         updateKeyboard(state.guessed || [], gameWord);
+
+        // Theme
+        if (state.theme) {
+            const t = document.getElementById('your-theme');
+            t.textContent = 'Tema: ' + state.theme;
+            t.classList.add('visible');
+        }
+        if (state.opponent_theme) {
+            const t = document.getElementById('opp-theme');
+            t.textContent = 'Tema: ' + state.opponent_theme;
+            t.classList.add('visible');
+        }
 
         const hintBtn = document.getElementById('hint-btn');
         const hintSub = document.getElementById('hint-sub');

@@ -11,6 +11,7 @@ class PlayerState:
         self.opponent_id = None
         self.hint_used = False
         self.word = ''
+        self.theme = ''
 
     def to_dict(self):
         return {
@@ -22,6 +23,7 @@ class PlayerState:
             'opponent_id': self.opponent_id,
             'hint_used': self.hint_used,
             'word': self.word,
+            'theme': self.theme,
         }
 
     @classmethod
@@ -33,7 +35,8 @@ class PlayerState:
         p.disconnect_time = data['disconnect_time']
         p.opponent_id = data['opponent_id']
         p.hint_used = data.get('hint_used', False)
-        p.word = data.get('word', '')
+        p.word  = data.get('word', '')
+        p.theme = data.get('theme', '')
         return p
 
 class GameState:
