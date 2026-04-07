@@ -10,17 +10,21 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #f2f2f8;
-            --surface: #ffffff;
-            --card:    #ffffff;
-            --border:  #dcdce8;
-            --text:    #0f0f26;
-            --muted:   #c4c4d8;
-            --dim:     #8888b0;
-            --red:     #e03232;
-            --green:   #00a85e;
-            --yellow:  #cc8800;
-            --blue:    #2f6ee0;
+            --bg:      #08080f;
+            --surface: #0d0d1c;
+            --card:    #111122;
+            --border:  #1c1c30;
+            --border2: #252540;
+            --text:    #f0f0ff;
+            --dim:     #5a5a8a;
+            --muted:   #2e2e50;
+            --red:     #ff4040;
+            --green:   #00cc74;
+            --yellow:  #ffb020;
+            --blue:    #4488ff;
+            --key-bg:  #161628;
+            --key-top: #1e1e36;
+            --key-bot: #0a0a18;
         }
 
         html, body { height: 100%; }
@@ -31,7 +35,7 @@
             color: var(--text);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
             overflow: hidden;
         }
 
@@ -40,25 +44,22 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 13px 28px;
+            padding: 11px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--surface);
             flex-shrink: 0;
-            z-index: 10;
         }
 
         .logo {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 900;
             letter-spacing: 6px;
             text-transform: uppercase;
-            color: var(--text);
         }
 
         #conn-status {
-            font-size: 0.63rem;
+            font-size: 0.62rem;
             color: var(--dim);
-            letter-spacing: 0.5px;
         }
 
         /* ── WAITING ── */
@@ -68,12 +69,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 28px;
+            gap: 24px;
         }
 
         .wait-ring {
-            width: 68px;
-            height: 68px;
+            width: 64px; height: 64px;
             border-radius: 50%;
             border: 2px solid var(--border);
             border-top-color: var(--red);
@@ -82,53 +82,56 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .wait-title {
-            font-size: 1rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+        .wait-title { font-size: 0.95rem; font-weight: 600; }
+        .wait-pos   { font-size: 0.7rem; color: var(--dim); }
 
-        .wait-pos {
-            font-size: 0.72rem;
-            color: var(--dim);
-        }
-
-        /* ── GAME SCREEN ── */
-        #game-screen {
-            display: none;
-            flex: 1;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Alert strip */
+        /* ── ALERT STRIP ── */
         #alert-strip {
             display: none;
-            padding: 5px 24px;
-            font-size: 0.68rem;
+            padding: 4px 20px;
+            font-size: 0.67rem;
             font-weight: 600;
             text-align: center;
             border-bottom: 1px solid transparent;
             flex-shrink: 0;
         }
-        #alert-strip.disc     { color: var(--yellow); background: rgba(255,190,48,0.07); border-color: rgba(255,190,48,0.18); }
-        #alert-strip.opp-won  { color: var(--green);  background: rgba(0,216,124,0.07);  border-color: rgba(0,216,124,0.18); }
-        #alert-strip.opp-lost { color: var(--red);    background: rgba(255,59,59,0.07);   border-color: rgba(255,59,59,0.18); }
+
+        #alert-strip.disc { color: var(--yellow); background: rgba(255,176,32,0.07); border-color: rgba(255,176,32,0.18); }
+
+        /* ── GAME ── */
+        #game-screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
 
         /* ── ARENA ── */
         .arena {
             display: flex;
             flex: 1;
+            min-height: 0;
             overflow: hidden;
         }
 
-        /* ── PLAYER SIDES ── */
+        /* ── PLAYER SIDE (your side — wider) ── */
         .player-side {
-            flex: 1;
+            flex: 1.1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 18px 20px 14px;
+            padding: 14px 20px 12px;
+            gap: 8px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* ── OPP SIDE ── */
+        .opp-side {
+            flex: 0.9;
+            display: flex;
+            flex-direction: column;
+            padding: 14px 20px 16px;
             gap: 10px;
             overflow: hidden;
             min-width: 0;
@@ -139,11 +142,11 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            width: 100%;
+            flex-shrink: 0;
         }
 
         .side-label {
-            font-size: 0.58rem;
+            font-size: 0.56rem;
             font-weight: 700;
             letter-spacing: 4px;
             text-transform: uppercase;
@@ -152,15 +155,10 @@
         .side-label.you { color: var(--red); }
         .side-label.opp { color: var(--blue); }
 
-        .err-dots {
-            display: flex;
-            gap: 5px;
-            margin-left: auto;
-        }
+        .err-dots { display: flex; gap: 5px; margin-left: auto; }
 
         .err-dot {
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             border: 1px solid var(--muted);
             background: transparent;
@@ -171,28 +169,25 @@
         .err-dot.on-opp  { background: var(--blue); border-color: var(--blue); }
 
         /* Hangman */
-        .hangman-wrap { flex-shrink: 0; }
+        .hangman-wrap { flex-shrink: 0; display: flex; justify-content: center; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
-        .hg-part { animation: fadeIn 0.2s ease; }
+        @keyframes partIn { from { opacity: 0; } to { opacity: 1; } }
+        .hg-part { animation: partIn 0.18s ease; }
 
         /* Word row */
         .word-row {
             display: flex;
-            gap: 7px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .letter-slot {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .letter-char {
@@ -202,104 +197,134 @@
             font-weight: 900;
             opacity: 0;
             transform: translateY(5px) scale(0.85);
-            transition: opacity 0.22s ease, transform 0.22s ease;
+            transition: opacity 0.2s, transform 0.2s;
         }
 
-        .letter-char.show {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+        .letter-char.show { opacity: 1; transform: translateY(0) scale(1); }
 
-        .letter-line { background: var(--muted); }
+        .letter-line { background: var(--border2); }
 
-        /* You — big */
-        .you-word .letter-char { width: 32px; height: 42px; font-size: 1.45rem; color: var(--text); }
-        .you-word .letter-line { width: 32px; height: 2px; }
+        .you-word .letter-char { width: 30px; height: 40px; font-size: 1.4rem; color: var(--text); }
+        .you-word .letter-line { width: 30px; height: 2px; }
 
-        /* Opp — smaller, blue tint */
-        .opp-word .letter-char { width: 24px; height: 32px; font-size: 1.05rem; color: var(--blue); }
-        .opp-word .letter-line { width: 24px; height: 2px; }
+        .opp-word .letter-char { width: 22px; height: 30px; font-size: 1rem; color: var(--blue); }
+        .opp-word .letter-line { width: 22px; height: 2px; }
 
-        /* Side status badge */
+        /* Status badge */
         .side-status {
             display: none;
-            padding: 5px 14px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
+            align-self: center;
         }
 
         .side-status.show { display: block; }
-        .side-status.won  { color: var(--green); background: rgba(0,216,124,0.1); border: 1px solid rgba(0,216,124,0.25); }
-        .side-status.lost { color: var(--red);   background: rgba(255,59,59,0.1);  border: 1px solid rgba(255,59,59,0.25); }
+        .side-status.won  { color: var(--green); background: rgba(0,204,116,0.1);  border: 1px solid rgba(0,204,116,0.25); }
+        .side-status.lost { color: var(--red);   background: rgba(255,64,64,0.1);  border: 1px solid rgba(255,64,64,0.25); }
 
         /* Hint */
         .hint-wrap {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         #hint-btn {
-            padding: 7px 20px;
+            padding: 6px 16px;
             background: transparent;
             border: 1px solid var(--yellow);
             border-radius: 6px;
             color: var(--yellow);
             font-family: 'Inter', sans-serif;
-            font-size: 0.68rem;
+            font-size: 0.66rem;
             font-weight: 600;
             letter-spacing: 2px;
             text-transform: uppercase;
             cursor: pointer;
             transition: background 0.15s, opacity 0.15s;
+            white-space: nowrap;
         }
 
-        #hint-btn:hover:not(:disabled) { background: rgba(255,190,48,0.1); }
+        #hint-btn:hover:not(:disabled) { background: rgba(255,176,32,0.1); }
 
         #hint-btn:disabled {
-            opacity: 0.2;
+            opacity: 0.18;
             cursor: not-allowed;
             border-color: var(--muted);
             color: var(--dim);
         }
 
-        .hint-sub { font-size: 0.6rem; color: var(--dim); letter-spacing: 1px; }
+        .hint-sub { font-size: 0.6rem; color: var(--dim); }
 
-        /* Opp chips */
-        .chips-area { width: 100%; }
-
-        .chips-label {
-            font-size: 0.56rem;
-            text-transform: uppercase;
-            letter-spacing: 2.5px;
-            color: var(--dim);
-            margin-bottom: 7px;
-        }
-
-        .chips-row {
+        /* ── KEYBOARD (inside player side) ── */
+        .keyboard-wrap {
+            flex-shrink: 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            min-height: 28px;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
         }
 
-        .chip {
-            width: 24px;
-            height: 24px;
+        .key-row {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .key {
+            width: 34px;
+            height: 38px;
+            border-radius: 6px;
+            border: 1px solid var(--border2);
+            border-bottom: 3px solid var(--key-bot);
+            background: linear-gradient(180deg, var(--key-top) 0%, var(--key-bg) 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            font-size: 0.68rem;
-            font-weight: 700;
+            user-select: none;
+            transition: background 0.08s, border-color 0.08s, transform 0.05s,
+                        border-bottom-width 0.05s, box-shadow 0.05s, opacity 0.15s, color 0.12s;
         }
 
-        .chip.hit  { background: rgba(0,216,124,0.14); color: var(--green); border: 1px solid rgba(0,216,124,0.3); }
-        .chip.miss { background: transparent; color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
+        .key:hover:not(:disabled) {
+            background: linear-gradient(180deg, #262640 0%, #1c1c34 100%);
+            border-color: #303055;
+        }
+
+        .key:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            box-shadow: none;
+        }
+
+        .key.hit {
+            background: linear-gradient(180deg, rgba(0,204,116,0.14) 0%, rgba(0,204,116,0.08) 100%);
+            border-color: rgba(0,204,116,0.35);
+            border-bottom-color: rgba(0,204,116,0.15);
+            color: var(--green);
+            cursor: default;
+        }
+
+        .key.miss {
+            opacity: 0.2;
+            cursor: default;
+            text-decoration: line-through;
+        }
+
+        .key:disabled { cursor: default; }
 
         /* ── VS DIVIDER ── */
         .vs-divider {
@@ -315,73 +340,46 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: var(--bg);
-            border: 1px solid var(--border);
+            border: 1px solid var(--border2);
             border-radius: 20px;
             padding: 6px 10px;
-            font-size: 0.58rem;
+            font-size: 0.56rem;
             font-weight: 700;
             letter-spacing: 3px;
             color: var(--dim);
         }
 
-        /* ── KEYBOARD ── */
-        #keyboard-area {
-            border-top: 1px solid var(--border);
-            background: var(--surface);
-            padding: 10px 16px 8px;
-            flex-shrink: 0;
+        /* ── OPP CHIPS ── */
+        .chips-area { display: flex; flex-direction: column; gap: 6px; }
+
+        .chips-label {
+            font-size: 0.54rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--dim);
         }
 
-        .key-row {
+        .chips-row {
             display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+            min-height: 26px;
         }
 
-        .key-row:last-child { margin-bottom: 0; }
-
-        .key {
-            width: 38px;
-            height: 44px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
+        .chip {
+            width: 26px; height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.1s, color 0.1s, transform 0.08s, border-color 0.1s, opacity 0.15s;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
         }
 
-        .key:hover:not(:disabled) {
-            background: #e8e8f4;
-            border-color: var(--dim);
-            transform: translateY(-1px);
-        }
+        .chip.hit  { background: rgba(0,204,116,0.12); color: var(--green); border: 1px solid rgba(0,204,116,0.28); }
+        .chip.miss { background: transparent; color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
 
-        .key:active:not(:disabled) { transform: translateY(0); }
-
-        .key.hit {
-            background: rgba(0,216,124,0.1);
-            border-color: rgba(0,216,124,0.4);
-            color: var(--green);
-            cursor: default;
-        }
-
-        .key.miss {
-            opacity: 0.25;
-            cursor: default;
-            text-decoration: line-through;
-        }
-
-        .key:disabled { cursor: default; }
-
-        /* Shake */
+        /* Shake animation */
         @keyframes shake {
             0%,100% { transform: translateX(0); }
             20%     { transform: translateX(-7px); }
@@ -390,7 +388,7 @@
             80%     { transform: translateX(4px); }
         }
 
-        .shake { animation: shake 0.32s ease; }
+        .shake { animation: shake 0.3s ease; }
 
         /* ── END OVERLAY ── */
         #end-overlay {
@@ -407,11 +405,11 @@
 
         .end-card {
             background: var(--card);
-            border: 1px solid var(--border);
+            border: 1px solid var(--border2);
             border-radius: 20px;
-            padding: 56px 48px;
+            padding: 52px 48px;
             text-align: center;
-            max-width: 400px;
+            max-width: 380px;
             width: 90%;
             animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -423,7 +421,7 @@
 
         .end-badge {
             display: inline-block;
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 700;
             letter-spacing: 4px;
             text-transform: uppercase;
@@ -432,11 +430,11 @@
             margin-bottom: 20px;
         }
 
-        .end-badge.won  { color: var(--green); background: rgba(0,216,124,0.1);  border: 1px solid rgba(0,216,124,0.28); }
-        .end-badge.lost { color: var(--red);   background: rgba(255,59,59,0.1);   border: 1px solid rgba(255,59,59,0.28); }
+        .end-badge.won  { color: var(--green); background: rgba(0,204,116,0.1);  border: 1px solid rgba(0,204,116,0.28); }
+        .end-badge.lost { color: var(--red);   background: rgba(255,64,64,0.1);  border: 1px solid rgba(255,64,64,0.28); }
 
         #end-title {
-            font-size: 2.8rem;
+            font-size: 2.6rem;
             font-weight: 900;
             letter-spacing: -1.5px;
             line-height: 1;
@@ -444,20 +442,21 @@
         }
 
         #end-word {
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             color: var(--dim);
-            margin-bottom: 40px;
+            margin-bottom: 38px;
             letter-spacing: 2px;
         }
 
         #play-again-btn {
-            padding: 13px 36px;
+            padding: 12px 34px;
             background: var(--red);
             border: none;
+            border-bottom: 3px solid #c02020;
             border-radius: 10px;
             color: #fff;
             font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -465,24 +464,23 @@
             transition: opacity 0.15s, transform 0.1s;
         }
 
-        #play-again-btn:hover  { opacity: 0.86; transform: translateY(-1px); }
-        #play-again-btn:active { transform: translateY(0); }
+        #play-again-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+        #play-again-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 620px) {
-            body { overflow: auto; }
-            #game-screen { overflow: auto; }
+            body { overflow: auto; height: auto; }
+            #game-screen { overflow: auto; height: auto; }
             .arena { flex-direction: column; overflow: visible; }
             .vs-divider { width: 100%; height: 1px; }
             .vs-badge { top: 0; left: 50%; transform: translate(-50%, -50%); }
-            .player-side { padding: 14px 16px; }
-            .key { width: 30px; height: 38px; font-size: 0.72rem; }
+            .player-side, .opp-side { padding: 14px 16px; }
+            .key { width: 29px; height: 34px; font-size: 0.7rem; }
         }
     </style>
 </head>
 <body>
 
-<!-- Top bar -->
 <div id="top-bar">
     <span class="logo">Forca</span>
     <span id="conn-status">Conectando...</span>
@@ -511,11 +509,11 @@
             </div>
 
             <div class="hangman-wrap">
-                <svg id="your-hg" width="170" height="190" viewBox="0 0 200 220">
-                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                <svg id="your-hg" width="160" height="178" viewBox="0 0 200 220">
+                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <circle id="y-head" cx="140" cy="56"  r="18" stroke="var(--red)" stroke-width="2.5" fill="none"    class="hg-part" style="display:none"/>
                     <line   id="y-body" x1="140" y1="74"  x2="140" y2="134"     stroke="var(--red)" stroke-width="2.5" class="hg-part" style="display:none"/>
                     <line   id="y-larm" x1="140" y1="92"  x2="108" y2="116"     stroke="var(--red)" stroke-width="2.5" class="hg-part" style="display:none"/>
@@ -531,7 +529,14 @@
 
             <div class="hint-wrap">
                 <button id="hint-btn">Usar dica</button>
-                <span class="hint-sub" id="hint-sub">1 dica disponivel</span>
+                <span class="hint-sub" id="hint-sub">1 disponivel</span>
+            </div>
+
+            <!-- Keyboard inside your side -->
+            <div class="keyboard-wrap">
+                <div class="key-row" id="row-1"></div>
+                <div class="key-row" id="row-2"></div>
+                <div class="key-row" id="row-3"></div>
             </div>
 
         </div>
@@ -540,7 +545,7 @@
         <div class="vs-divider"><div class="vs-badge">VS</div></div>
 
         <!-- OPPONENT SIDE -->
-        <div class="player-side">
+        <div class="opp-side">
 
             <div class="side-header">
                 <span class="side-label opp">Oponente</span>
@@ -548,11 +553,11 @@
             </div>
 
             <div class="hangman-wrap">
-                <svg id="opp-hg" width="136" height="152" viewBox="0 0 200 220">
-                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                <svg id="opp-hg" width="128" height="142" viewBox="0 0 200 220">
+                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <circle id="o-head" cx="140" cy="56"  r="18" stroke="var(--blue)" stroke-width="2.5" fill="none"    class="hg-part" style="display:none"/>
                     <line   id="o-body" x1="140" y1="74"  x2="140" y2="134"     stroke="var(--blue)" stroke-width="2.5" class="hg-part" style="display:none"/>
                     <line   id="o-larm" x1="140" y1="92"  x2="108" y2="116"     stroke="var(--blue)" stroke-width="2.5" class="hg-part" style="display:none"/>
@@ -574,14 +579,6 @@
         </div>
 
     </div>
-
-    <!-- Keyboard -->
-    <div id="keyboard-area">
-        <div class="key-row" id="row-1"></div>
-        <div class="key-row" id="row-2"></div>
-        <div class="key-row" id="row-3"></div>
-    </div>
-
 </div>
 
 <!-- End overlay -->
@@ -603,11 +600,11 @@
         ['Z','X','C','V','B','N','M'],
     ];
 
-    let gameWord    = '';
-    let prevWrong   = 0;
+    let gameWord     = '';
+    let prevWrong    = 0;
     let isFirstState = true;
-    let gameOver    = false;
-    let socket      = null;
+    let gameOver     = false;
+    let socket       = null;
 
     const urlParams    = new URLSearchParams(window.location.search);
     const serversParam = urlParams.get('servers');
@@ -619,16 +616,14 @@
     let playerId    = localStorage.getItem('hangman_player_id') || '';
 
     // Build error dots
-    function buildDots(id) {
+    ['your-err-dots','opp-err-dots'].forEach(id => {
         const el = document.getElementById(id);
         for (let i = 0; i < 6; i++) {
             const d = document.createElement('div');
             d.className = 'err-dot';
             el.appendChild(d);
         }
-    }
-    buildDots('your-err-dots');
-    buildDots('opp-err-dots');
+    });
 
     // Build keyboard
     QWERTY.forEach((row, i) => {
@@ -653,7 +648,7 @@
         socket = io(url, { query: { player_id: playerId }, reconnection: false, timeout: 5000 });
 
         socket.on('connect', () => {
-            setStatus('Online' + (SERVER_LIST.length > 1 ? ' · srv ' + (serverIndex + 1) + '/' + SERVER_LIST.length : ''));
+            setStatus('Online' + (SERVER_LIST.length > 1 ? ' · srv' + (serverIndex + 1) : ''));
         });
         socket.on('disconnect',    () => { if (!gameOver) { setStatus('Reconectando...'); switchServer(); } });
         socket.on('connect_error', () => switchServer());
@@ -696,11 +691,10 @@
         }
     }
 
-    function updateDots(id, count, dotClass) {
-        const dots = document.getElementById(id).querySelectorAll('.err-dot');
-        dots.forEach((d, i) => {
+    function updateDots(id, count, cls) {
+        document.getElementById(id).querySelectorAll('.err-dot').forEach((d, i) => {
             d.classList.remove('on-you', 'on-opp');
-            if (i < count) d.classList.add(dotClass);
+            if (i < count) d.classList.add(cls);
         });
     }
 
@@ -770,18 +764,15 @@
         prevWrong    = wrongNow;
         isFirstState = false;
 
-        // Your side
         renderWord('your-word', state.word_state);
         updateHangman(Y_PARTS, wrongNow, doShake);
         updateDots('your-err-dots', wrongNow, 'on-you');
         updateKeyboard(state.guessed || [], gameWord);
 
-        // Hint
         const hintBtn = document.getElementById('hint-btn');
         const hintSub = document.getElementById('hint-sub');
-        if (state.hint_used) { hintBtn.disabled = true; hintSub.textContent = 'Dica utilizada'; }
+        if (state.hint_used) { hintBtn.disabled = true; hintSub.textContent = 'Utilizada'; }
 
-        // Opponent side
         if (state.opponent_word_state !== undefined) {
             renderWord('opp-word', state.opponent_word_state);
             updateHangman(O_PARTS, state.opponent_wrong || 0, false);
@@ -789,7 +780,6 @@
             updateOppChips(state.opponent_guessed || [], state.opponent_word_state);
         }
 
-        // Alert strip
         const strip = document.getElementById('alert-strip');
         strip.style.display = 'none';
         strip.className = '';
@@ -799,38 +789,32 @@
             strip.textContent = 'Oponente desconectou — 30 segundos para reconectar';
         }
 
-        // Side status badges
-        if (state.status === 'won')  showSideStatus('your-status-badge', 'won');
-        if (state.status === 'lost') showSideStatus('your-status-badge', 'lost');
+        if (state.status === 'won')           showSideStatus('your-status-badge', 'won');
+        else if (state.status === 'lost')     showSideStatus('your-status-badge', 'lost');
         if (state.opponent_status === 'won')  showSideStatus('opp-status-badge', 'won');
-        if (state.opponent_status === 'lost') showSideStatus('opp-status-badge', 'lost');
+        else if (state.opponent_status === 'lost') showSideStatus('opp-status-badge', 'lost');
 
-        // Game over
         if (state.status === 'won' || state.status === 'lost') {
             gameOver = true;
             localStorage.removeItem('hangman_player_id');
             document.querySelectorAll('.key').forEach(k => k.disabled = true);
             hintBtn.disabled = true;
 
-            const overlay = document.getElementById('end-overlay');
-            overlay.classList.add('show');
+            document.getElementById('end-overlay').classList.add('show');
 
             const badge = document.getElementById('end-badge');
             const title = document.getElementById('end-title');
 
             if (state.status === 'won') {
-                badge.className = 'end-badge won';
-                badge.textContent = 'Vitoria';
+                badge.className = 'end-badge won'; badge.textContent = 'Vitoria';
                 title.textContent = 'Voce venceu!';
             } else {
-                badge.className = 'end-badge lost';
-                badge.textContent = 'Derrota';
+                badge.className = 'end-badge lost'; badge.textContent = 'Derrota';
                 title.textContent = 'Voce perdeu.';
             }
 
-            if (state.full_word) {
+            if (state.full_word)
                 document.getElementById('end-word').textContent = 'A palavra era  ' + state.full_word;
-            }
         }
     }
 
