@@ -7,21 +7,25 @@ MAX_ERRORS = 6
 WORDS = ["SISTEMAS", "DISTRIBUIDOS", "REDUNDANCIA", "SOCKETS", "CONCORRENCIA", "LATENCIA", "SERVIDOR", "CLIENTE"]
 
 def create_game(player1_id: str, player2_id: str) -> GameState:
-    word = random.choice(WORDS)
-    game = GameState(word=word)
-    
+    words = random.sample(WORDS, 2)
+
+    game = GameState()
+
     p1 = PlayerState(player1_id)
     p2 = PlayerState(player2_id)
-    
+
+    p1.word = words[0]
+    p2.word = words[1]
+
     p1.opponent_id = player2_id
     p2.opponent_id = player1_id
-    
+
     p1.status = 'playing'
     p2.status = 'playing'
-    
+
     game.players[player1_id] = p1
     game.players[player2_id] = p2
-    
+
     return game
 
 def is_word_guessed(word: str, guessed_letters: set) -> bool:
@@ -41,12 +45,11 @@ def process_guess(game_state: GameState, player_id: str, letter: str) -> bool:
         return False
 
     if letter in player.guessed_letters:
-        # Already guessed
         return False
-        
+
     player.guessed_letters.add(letter)
-    
-    if letter not in game_state.word:
+
+    if letter not in player.word:
         player.wrong_count += 1
 
     # Check for win/loss
@@ -58,7 +61,7 @@ def process_guess(game_state: GameState, player_id: str, letter: str) -> bool:
                 opponent.status = 'won'
                 game_state.winner_id = opponent.player_id
         game_state.status = 'finished'
-    elif is_word_guessed(game_state.word, player.guessed_letters):
+    elif is_word_guessed(player.word, player.guessed_letters):
         player.status = 'won'
         game_state.winner_id = player.player_id
         game_state.status = 'finished'
@@ -80,7 +83,7 @@ def process_hint(game_state: GameState, player_id: str) -> bool:
     if not player or player.status != 'playing' or player.hint_used:
         return False
 
-    unguessed = [c for c in set(game_state.word) if c not in player.guessed_letters]
+    unguessed = [c for c in set(player.word) if c not in player.guessed_letters]
     if not unguessed:
         return False
 
