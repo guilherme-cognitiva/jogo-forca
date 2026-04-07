@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Forca Distribuido</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #e94560;
+            margin-bottom: 6px;
+            font-size: 1.6rem;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #status-bar {
+            margin-bottom: 20px;
+            color: #606080;
+            font-size: 0.8rem;
+        }
+
+        /* --- Waiting screen --- */
+        #waiting-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        #waiting-screen h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .spinner {
+            display: block;
+            width: 44px;
+            height: 44px;
+            border: 4px solid #333;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #waiting-screen p {
+            color: #a0a0c0;
+            font-size: 0.9rem;
+        }
+
+        /* --- Game screen --- */
+        #game-screen {
+            display: none;
+            width: 100%;
+            max-width: 940px;
+        }
+
+        .game-panels {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .panel {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            min-width: 300px;
+            max-width: 440px;
+        }
+
+        .panel.you    { border-color: #e94560; }
+        .panel.opponent { border-color: #533483; }
+
+        .panel h2 {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .panel.you h2       { color: #e94560; }
+        .panel.opponent h2  { color: #a080d0; }
+
+        /* SVG hangman */
+        .hangman-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .hangman-svg { width: 160px; height: 180px; }
+
+        /* Word display */
+        .word-display {
+            font-size: 1.8rem;
+            letter-spacing: 10px;
+            text-align: center;
+            color: #fff;
+            min-height: 2.4rem;
+            margin-bottom: 8px;
+        }
+
+        .panel.opponent .word-display {
+            font-size: 1.3rem;
+            letter-spacing: 6px;
+        }
+
+        /* Error count */
+        .errors {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #808090;
+            margin-bottom: 10px;
+        }
+
+        .errors .count { color: #e94560; font-weight: bold; }
+
+        /* Guessed letters */
+        .guessed-letters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            min-height: 26px;
+            margin-bottom: 12px;
+        }
+
+        .chip {
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: bold;
+        }
+
+        .chip.hit  { background: #1a4d2a; color: #4ade80; }
+        .chip.miss { background: #4d1a1a; color: #f87171; }
+
+        /* Input */
+        .input-area {
+            display: flex;
+            gap: 8px;
+        }
+
+        #letter-input {
+            flex: 1;
+            padding: 10px;
+            background: #0f3460;
+            border: 1px solid #e94560;
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            text-align: center;
+            text-transform: uppercase;
+            outline: none;
+        }
+
+        #letter-input:disabled { border-color: #444; }
+
+        #guess-btn {
+            padding: 10px 18px;
+            background: #e94560;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.15s;
+        }
+
+        #guess-btn:hover    { background: #c73450; }
+        #guess-btn:disabled { background: #444; cursor: not-allowed; }
+
+        /* Opponent status badge */
+        .opp-badge {
+            text-align: center;
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .opp-badge.disconnected { background: #4d3300; color: #fbbf24; }
+        .opp-badge.won          { background: #1a4d2a; color: #4ade80; }
+        .opp-badge.lost         { background: #4d1a1a; color: #f87171; }
+
+        /* End screen */
+        #end-screen {
+            display: none;
+            text-align: center;
+            margin-top: 24px;
+            padding: 20px;
+            background: #16213e;
+            border-radius: 12px;
+            border: 2px solid #0f3460;
+        }
+
+        #end-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        #end-word {
+            color: #a0a0c0;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+        }
+
+        #play-again-btn {
+            padding: 10px 28px;
+            background: transparent;
+            border: 2px solid #e94560;
+            border-radius: 8px;
+            color: #e94560;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.15s;
+        }
+
+        #play-again-btn:hover { background: #e94560; color: #fff; }
+
+        @media (max-width: 680px) {
+            .panel { min-width: 280px; }
+            .word-display { font-size: 1.4rem; letter-spacing: 7px; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Jogo da Forca: Modo Corrida</h1>
+<div id="status-bar">Conectando...</div>
+
+<!-- Waiting -->
+<div id="waiting-screen">
+    <h2>Aguardando Oponente</h2>
+    <span class="spinner"></span>
+    <p id="queue-pos">Procurando adversario...</p>
+</div>
+
+<!-- Game -->
+<div id="game-screen">
+    <div class="game-panels">
+
+        <!-- Your panel -->
+        <div class="panel you">
+            <h2>Voce</h2>
+            <div class="hangman-wrap">
+                <svg class="hangman-svg" id="your-hangman" viewBox="0 0 160 180">
+                    <!-- gallows -->
+                    <line x1="5"   y1="172" x2="155" y2="172" stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="172" x2="35"  y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="8"   x2="110" y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="110" y1="8"   x2="110" y2="32"  stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <!-- body parts -->
+                    <circle id="y-head" cx="110" cy="46"  r="14" stroke="#e94560" stroke-width="3" fill="none"     style="display:none"/>
+                    <line   id="y-body" x1="110" y1="60"  x2="110" y2="108"       stroke="#e94560" stroke-width="3" style="display:none"/>
+                    <line   id="y-larm" x1="110" y1="74"  x2="84"  y2="96"        stroke="#e94560" stroke-width="3" style="display:none"/>
+                    <line   id="y-rarm" x1="110" y1="74"  x2="136" y2="96"        stroke="#e94560" stroke-width="3" style="display:none"/>
+                    <line   id="y-lleg" x1="110" y1="108" x2="84"  y2="140"       stroke="#e94560" stroke-width="3" style="display:none"/>
+                    <line   id="y-rleg" x1="110" y1="108" x2="136" y2="140"       stroke="#e94560" stroke-width="3" style="display:none"/>
+                </svg>
+            </div>
+            <div class="word-display" id="your-word"></div>
+            <div class="errors">Erros: <span class="count" id="your-errors">0</span> / 6</div>
+            <div class="guessed-letters" id="your-guessed"></div>
+            <div class="input-area">
+                <input type="text" id="letter-input" maxlength="1" placeholder="A-Z" autocomplete="off" spellcheck="false"/>
+                <button id="guess-btn">Enviar</button>
+            </div>
+        </div>
+
+        <!-- Opponent panel -->
+        <div class="panel opponent">
+            <h2>Oponente</h2>
+            <div id="opp-badge-wrap"></div>
+            <div class="hangman-wrap">
+                <svg class="hangman-svg" id="opp-hangman" viewBox="0 0 160 180">
+                    <line x1="5"   y1="172" x2="155" y2="172" stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="172" x2="35"  y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="35"  y1="8"   x2="110" y2="8"   stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="110" y1="8"   x2="110" y2="32"  stroke="#666" stroke-width="4" stroke-linecap="round"/>
+                    <circle id="o-head" cx="110" cy="46"  r="14" stroke="#a080d0" stroke-width="3" fill="none"     style="display:none"/>
+                    <line   id="o-body" x1="110" y1="60"  x2="110" y2="108"       stroke="#a080d0" stroke-width="3" style="display:none"/>
+                    <line   id="o-larm" x1="110" y1="74"  x2="84"  y2="96"        stroke="#a080d0" stroke-width="3" style="display:none"/>
+                    <line   id="o-rarm" x1="110" y1="74"  x2="136" y2="96"        stroke="#a080d0" stroke-width="3" style="display:none"/>
+                    <line   id="o-lleg" x1="110" y1="108" x2="84"  y2="140"       stroke="#a080d0" stroke-width="3" style="display:none"/>
+                    <line   id="o-rleg" x1="110" y1="108" x2="136" y2="140"       stroke="#a080d0" stroke-width="3" style="display:none"/>
+                </svg>
+            </div>
+            <div class="word-display" id="opp-word"></div>
+            <div class="errors">Erros: <span class="count" id="opp-errors">0</span> / 6</div>
+            <div class="guessed-letters" id="opp-guessed"></div>
+        </div>
+
+    </div>
+
+    <!-- End screen -->
+    <div id="end-screen">
+        <div id="end-title"></div>
+        <div id="end-word"></div>
+        <button id="play-again-btn" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+</div>
+
+<script>
+    const Y_PARTS = ['y-head', 'y-body', 'y-larm', 'y-rarm', 'y-lleg', 'y-rleg'];
+    const O_PARTS = ['o-head', 'o-body', 'o-larm', 'o-rarm', 'o-lleg', 'o-rleg'];
+
+    let gameWord = '';
+    let gameOver = false;
+    let socket = null;
+
+    // --- Failover: ?servers=http://vps1:5000,http://vps2:5000
+    // Se nao especificado, usa o proprio servidor que serviu a pagina.
+    const urlParams = new URLSearchParams(window.location.search);
+    const serversParam = urlParams.get('servers');
+    const SERVER_LIST = serversParam
+        ? serversParam.split(',').map(s => s.trim())
+        : [window.location.origin];
+
+    let serverIndex = 0;
+
+    // player_id persiste no localStorage para reconexao apos failover
+    let playerId = localStorage.getItem('hangman_player_id') || '';
+
+    // ---------------------------------------------------------------------------
+    // Conexao e failover
+    // ---------------------------------------------------------------------------
+
+    function connectToServer() {
+        const url = SERVER_LIST[serverIndex];
+        setStatus('Conectando a ' + url + '...');
+
+        if (socket) {
+            socket.off();
+            socket.disconnect();
+        }
+
+        socket = io(url, {
+            query: { player_id: playerId },
+            reconnection: false,   // gerenciamos manualmente para trocar de servidor
+            timeout: 5000,
+        });
+
+        socket.on('connect', () => {
+            const label = SERVER_LIST.length > 1
+                ? ' (servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length + ')'
+                : '';
+            setStatus('Conectado a ' + url + label);
+        });
+
+        socket.on('disconnect', reason => {
+            if (gameOver) return;
+            setStatus('Conexao perdida (' + reason + '). Tentando proximo servidor...');
+            switchServer();
+        });
+
+        socket.on('connect_error', () => {
+            setStatus('Falha em ' + url + '. Tentando proximo servidor...');
+            switchServer();
+        });
+
+        socket.on('connected', ({ player_id }) => {
+            playerId = player_id;
+            localStorage.setItem('hangman_player_id', player_id);
+            const label = SERVER_LIST.length > 1
+                ? ' (servidor ' + (serverIndex + 1) + '/' + SERVER_LIST.length + ')'
+                : '';
+            setStatus('Conectado a ' + url + ' | ID: ' + player_id.substring(0, 8) + label);
+        });
+
+        socket.on('waiting', ({ position }) => {
+            document.getElementById('waiting-screen').style.display = 'block';
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('queue-pos').textContent =
+                'Posicao na fila: ' + position + ' — aguardando adversario...';
+        });
+
+        socket.on('game_state', handleGameState);
+    }
+
+    function switchServer() {
+        if (gameOver) return;
+        serverIndex = (serverIndex + 1) % SERVER_LIST.length;
+        setTimeout(connectToServer, 1500);
+    }
+
+    function setStatus(msg) {
+        document.getElementById('status-bar').textContent = msg;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Renderizacao
+    // ---------------------------------------------------------------------------
+
+    function updateHangman(parts, count) {
+        parts.forEach((id, i) => {
+            document.getElementById(id).style.display = i < count ? '' : 'none';
+        });
+    }
+
+    function renderGuessed(containerId, letters, word) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = '';
+        letters.forEach(l => {
+            const span = document.createElement('span');
+            span.className = 'chip ' + (word.includes(l) ? 'hit' : 'miss');
+            span.textContent = l;
+            el.appendChild(span);
+        });
+    }
+
+    function handleGameState(state) {
+        if (gameOver) return;
+
+        document.getElementById('waiting-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+
+        if (state.full_word) gameWord = state.full_word;
+
+        // Seu painel
+        document.getElementById('your-word').textContent = state.word_state;
+        document.getElementById('your-errors').textContent = state.wrong_count;
+        updateHangman(Y_PARTS, state.wrong_count);
+        renderGuessed('your-guessed', state.guessed || [], gameWord || state.word_state.replace(/ /g, ''));
+
+        // Painel do oponente
+        if (state.opponent_word_state !== undefined) {
+            document.getElementById('opp-word').textContent = state.opponent_word_state;
+            document.getElementById('opp-errors').textContent = state.opponent_wrong;
+            updateHangman(O_PARTS, state.opponent_wrong);
+            renderGuessed('opp-guessed', state.opponent_guessed || [], gameWord || '');
+        }
+
+        // Badge oponente
+        const wrap = document.getElementById('opp-badge-wrap');
+        wrap.innerHTML = '';
+        if (state.opponent_status === 'disconnected') {
+            wrap.innerHTML = '<div class="opp-badge disconnected">Oponente desconectado — 30s para reconectar</div>';
+        } else if (state.opponent_status === 'won') {
+            wrap.innerHTML = '<div class="opp-badge won">Oponente venceu!</div>';
+        } else if (state.opponent_status === 'lost') {
+            wrap.innerHTML = '<div class="opp-badge lost">Oponente perdeu!</div>';
+        }
+
+        // Fim de jogo
+        if (state.status === 'won' || state.status === 'lost') {
+            gameOver = true;
+            localStorage.removeItem('hangman_player_id');
+            document.getElementById('guess-btn').disabled = true;
+            document.getElementById('letter-input').disabled = true;
+
+            const endScreen = document.getElementById('end-screen');
+            const endTitle  = document.getElementById('end-title');
+            endScreen.style.display = 'block';
+
+            if (state.status === 'won') {
+                endTitle.style.color = '#4ade80';
+                endTitle.textContent = 'VOCE VENCEU!';
+            } else {
+                endTitle.style.color = '#f87171';
+                endTitle.textContent = 'VOCE PERDEU!';
+            }
+
+            if (state.full_word) {
+                document.getElementById('end-word').textContent = 'A palavra era: ' + state.full_word;
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Input
+    // ---------------------------------------------------------------------------
+
+    function sendGuess() {
+        if (!socket) return;
+        const input = document.getElementById('letter-input');
+        const letter = input.value.trim().toUpperCase();
+        if (letter && /^[A-Z]$/.test(letter)) {
+            socket.emit('guess', { letter });
+        }
+        input.value = '';
+        input.focus();
+    }
+
+    document.getElementById('guess-btn').addEventListener('click', sendGuess);
+
+    document.getElementById('letter-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendGuess();
+    });
+
+    document.getElementById('letter-input').addEventListener('input', e => {
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+    });
+
+    // ---------------------------------------------------------------------------
+    // Start
+    // ---------------------------------------------------------------------------
+    connectToServer();
+</script>
+
+</body>
+</html>
