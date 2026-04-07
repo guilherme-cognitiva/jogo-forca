@@ -9,6 +9,7 @@ class PlayerState:
         self.status = 'waiting' # 'waiting', 'playing', 'won', 'lost', 'disconnected'
         self.disconnect_time = None
         self.opponent_id = None
+        self.hint_used = False
 
     def to_dict(self):
         return {
@@ -17,7 +18,8 @@ class PlayerState:
             'wrong_count': self.wrong_count,
             'status': self.status,
             'disconnect_time': self.disconnect_time,
-            'opponent_id': self.opponent_id
+            'opponent_id': self.opponent_id,
+            'hint_used': self.hint_used,
         }
 
     @classmethod
@@ -28,6 +30,7 @@ class PlayerState:
         p.status = data['status']
         p.disconnect_time = data['disconnect_time']
         p.opponent_id = data['opponent_id']
+        p.hint_used = data.get('hint_used', False)
         return p
 
 class GameState:

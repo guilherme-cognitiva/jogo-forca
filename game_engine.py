@@ -72,6 +72,23 @@ def process_guess(game_state: GameState, player_id: str, letter: str) -> bool:
 def get_masked_word(word: str, guessed_letters: set) -> str:
     return " ".join([char if char in guessed_letters else "_" for char in word])
 
+def process_hint(game_state: GameState, player_id: str) -> bool:
+    """Reveals one random unguessed letter from the word. Returns True if state changed."""
+    if game_state.status != 'playing':
+        return False
+    player = game_state.players.get(player_id)
+    if not player or player.status != 'playing' or player.hint_used:
+        return False
+
+    unguessed = [c for c in set(game_state.word) if c not in player.guessed_letters]
+    if not unguessed:
+        return False
+
+    player.hint_used = True
+    letter = random.choice(unguessed)
+    process_guess(game_state, player_id, letter)
+    return True
+
 def check_disconnect_timeouts(game_state: GameState, timeout_seconds=30):
     """
     Checks if a disconnected player has timed out. 

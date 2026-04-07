@@ -92,6 +92,7 @@ def _build_game_state_msg(game, player_id):
             if game.status == 'finished' or player.status in ['won', 'lost']:
                 msg['full_word'] = game.word
                 msg['winner_id'] = game.winner_id
+    msg['hint_used'] = player.hint_used
     return msg
 
 
@@ -187,6 +188,21 @@ def on_disconnect():
                     player.status = 'disconnected'
                     player.disconnect_time = time.time()
                     logging.info(f"Jogador {player_id[:8]} desconectou.")
+                    notify_all_in_game(game)
+                    _sync_state()
+                break
+
+
+@socketio.on('hint')
+def on_hint():
+    sid = flask_request.sid
+    with state_lock:
+        player_id = sid_to_player.get(sid)
+        if not player_id:
+            return
+        for game in games.values():
+            if player_id in game.players:
+                if game_engine.process_hint(game, player_id):
                     notify_all_in_game(game)
                     _sync_state()
                 break
