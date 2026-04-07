@@ -10,17 +10,17 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #07070f;
-            --surface: #0c0c18;
-            --card:    #101020;
-            --border:  #1a1a2e;
-            --text:    #ededff;
-            --muted:   #363658;
-            --dim:     #6868a0;
-            --red:     #ff3b3b;
-            --green:   #00d87c;
-            --yellow:  #ffbe30;
-            --blue:    #4a8fff;
+            --bg:      #f2f2f8;
+            --surface: #ffffff;
+            --card:    #ffffff;
+            --border:  #dcdce8;
+            --text:    #0f0f26;
+            --muted:   #c4c4d8;
+            --dim:     #8888b0;
+            --red:     #e03232;
+            --green:   #00a85e;
+            --yellow:  #cc8800;
+            --blue:    #2f6ee0;
         }
 
         html, body { height: 100%; }
@@ -328,7 +328,7 @@
         #keyboard-area {
             border-top: 1px solid var(--border);
             background: var(--surface);
-            padding: 13px 16px 16px;
+            padding: 10px 16px 8px;
             flex-shrink: 0;
         }
 
@@ -359,7 +359,7 @@
         }
 
         .key:hover:not(:disabled) {
-            background: #181830;
+            background: #e8e8f4;
             border-color: var(--dim);
             transform: translateY(-1px);
         }
@@ -512,10 +512,10 @@
 
             <div class="hangman-wrap">
                 <svg id="your-hg" width="170" height="190" viewBox="0 0 200 220">
-                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
                     <circle id="y-head" cx="140" cy="56"  r="18" stroke="var(--red)" stroke-width="2.5" fill="none"    class="hg-part" style="display:none"/>
                     <line   id="y-body" x1="140" y1="74"  x2="140" y2="134"     stroke="var(--red)" stroke-width="2.5" class="hg-part" style="display:none"/>
                     <line   id="y-larm" x1="140" y1="92"  x2="108" y2="116"     stroke="var(--red)" stroke-width="2.5" class="hg-part" style="display:none"/>
@@ -549,10 +549,10 @@
 
             <div class="hangman-wrap">
                 <svg id="opp-hg" width="136" height="152" viewBox="0 0 200 220">
-                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
-                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#20203a" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="10"  y1="212" x2="190" y2="212" stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="140" y1="10"  x2="140" y2="38"  stroke="#d0d0e4" stroke-width="5" stroke-linecap="round"/>
                     <circle id="o-head" cx="140" cy="56"  r="18" stroke="var(--blue)" stroke-width="2.5" fill="none"    class="hg-part" style="display:none"/>
                     <line   id="o-body" x1="140" y1="74"  x2="140" y2="134"     stroke="var(--blue)" stroke-width="2.5" class="hg-part" style="display:none"/>
                     <line   id="o-larm" x1="140" y1="92"  x2="108" y2="116"     stroke="var(--blue)" stroke-width="2.5" class="hg-part" style="display:none"/>
