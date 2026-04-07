@@ -10,11 +10,11 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:      #08080f;
-            --surface: #0d0d1c;
-            --card:    #111122;
-            --border:  #1c1c30;
-            --border2: #252540;
+            --bg:      #000000;
+            --surface: #080810;
+            --card:    #0e0e1a;
+            --border:  #1c1c2e;
+            --border2: #28283e;
             --text:    #f0f0ff;
             --dim:     #5a5a8a;
             --muted:   #2a2a48;
@@ -217,19 +217,19 @@
 
         /* Theme tag */
         .theme-tag {
-            font-size: 0.6rem;
-            font-weight: 600;
+            font-size: 0.62rem;
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--dim);
-            padding: 3px 10px;
-            border: 1px solid var(--border2);
+            color: #ffffff;
+            padding: 4px 12px;
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 20px;
-            background: var(--card);
+            background: rgba(255,255,255,0.06);
             display: none;
         }
         .theme-tag.visible { display: block; }
-        .theme-tag.opp { border-color: rgba(68,136,255,0.2); color: rgba(68,136,255,0.6); }
+        .theme-tag.opp { border-color: rgba(68,136,255,0.35); color: rgba(68,136,255,0.9); background: rgba(68,136,255,0.08); }
 
         /* Hint */
         .hint-wrap {
