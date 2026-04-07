@@ -17,14 +17,11 @@
             --border2: #252540;
             --text:    #f0f0ff;
             --dim:     #5a5a8a;
-            --muted:   #2e2e50;
+            --muted:   #2a2a48;
             --red:     #ff4040;
             --green:   #00cc74;
             --yellow:  #ffb020;
             --blue:    #4488ff;
-            --key-bg:  #161628;
-            --key-top: #1e1e36;
-            --key-bot: #0a0a18;
         }
 
         html, body { height: 100%; }
@@ -44,7 +41,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 11px 24px;
+            padding: 11px 28px;
             border-bottom: 1px solid var(--border);
             background: var(--surface);
             flex-shrink: 0;
@@ -57,10 +54,7 @@
             text-transform: uppercase;
         }
 
-        #conn-status {
-            font-size: 0.62rem;
-            color: var(--dim);
-        }
+        #conn-status { font-size: 0.62rem; color: var(--dim); }
 
         /* ── WAITING ── */
         #waiting-screen {
@@ -81,7 +75,6 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .wait-title { font-size: 0.95rem; font-weight: 600; }
         .wait-pos   { font-size: 0.7rem; color: var(--dim); }
 
@@ -95,7 +88,6 @@
             border-bottom: 1px solid transparent;
             flex-shrink: 0;
         }
-
         #alert-strip.disc { color: var(--yellow); background: rgba(255,176,32,0.07); border-color: rgba(255,176,32,0.18); }
 
         /* ── GAME ── */
@@ -115,24 +107,26 @@
             overflow: hidden;
         }
 
-        /* ── PLAYER SIDE (your side — wider) ── */
         .player-side {
-            flex: 1.1;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 14px 20px 12px;
-            gap: 8px;
+            align-items: center;
+            justify-content: space-evenly;
+            padding: 16px 24px 12px;
+            gap: 6px;
             overflow: hidden;
             min-width: 0;
         }
 
-        /* ── OPP SIDE ── */
         .opp-side {
-            flex: 0.9;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 14px 20px 16px;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-evenly;
+            padding: 16px 24px 12px;
+            gap: 8px;
             overflow: hidden;
             min-width: 0;
         }
@@ -142,6 +136,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            width: 100%;
             flex-shrink: 0;
         }
 
@@ -151,7 +146,6 @@
             letter-spacing: 4px;
             text-transform: uppercase;
         }
-
         .side-label.you { color: var(--red); }
         .side-label.opp { color: var(--blue); }
 
@@ -164,7 +158,6 @@
             background: transparent;
             transition: background 0.25s, border-color 0.25s;
         }
-
         .err-dot.on-you  { background: var(--red);  border-color: var(--red); }
         .err-dot.on-opp  { background: var(--blue); border-color: var(--blue); }
 
@@ -199,15 +192,13 @@
             transform: translateY(5px) scale(0.85);
             transition: opacity 0.2s, transform 0.2s;
         }
-
         .letter-char.show { opacity: 1; transform: translateY(0) scale(1); }
-
         .letter-line { background: var(--border2); }
 
         .you-word .letter-char { width: 30px; height: 40px; font-size: 1.4rem; color: var(--text); }
         .you-word .letter-line { width: 30px; height: 2px; }
 
-        .opp-word .letter-char { width: 22px; height: 30px; font-size: 1rem; color: var(--blue); }
+        .opp-word .letter-char { width: 22px; height: 32px; font-size: 1rem; color: var(--blue); }
         .opp-word .letter-line { width: 22px; height: 2px; }
 
         /* Status badge */
@@ -219,18 +210,16 @@
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            align-self: center;
         }
-
         .side-status.show { display: block; }
-        .side-status.won  { color: var(--green); background: rgba(0,204,116,0.1);  border: 1px solid rgba(0,204,116,0.25); }
-        .side-status.lost { color: var(--red);   background: rgba(255,64,64,0.1);  border: 1px solid rgba(255,64,64,0.25); }
+        .side-status.won  { color: var(--green); background: rgba(0,204,116,0.1); border: 1px solid rgba(0,204,116,0.25); }
+        .side-status.lost { color: var(--red);   background: rgba(255,64,64,0.1); border: 1px solid rgba(255,64,64,0.25); }
 
         /* Hint */
         .hint-wrap {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
@@ -241,7 +230,7 @@
             border-radius: 6px;
             color: var(--yellow);
             font-family: 'Inter', sans-serif;
-            font-size: 0.66rem;
+            font-size: 0.65rem;
             font-weight: 600;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -249,82 +238,10 @@
             transition: background 0.15s, opacity 0.15s;
             white-space: nowrap;
         }
-
         #hint-btn:hover:not(:disabled) { background: rgba(255,176,32,0.1); }
-
-        #hint-btn:disabled {
-            opacity: 0.18;
-            cursor: not-allowed;
-            border-color: var(--muted);
-            color: var(--dim);
-        }
+        #hint-btn:disabled { opacity: 0.18; cursor: not-allowed; border-color: var(--muted); color: var(--dim); }
 
         .hint-sub { font-size: 0.6rem; color: var(--dim); }
-
-        /* ── KEYBOARD (inside player side) ── */
-        .keyboard-wrap {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-top: auto;
-            padding-top: 8px;
-            border-top: 1px solid var(--border);
-        }
-
-        .key-row {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .key {
-            width: 34px;
-            height: 38px;
-            border-radius: 6px;
-            border: 1px solid var(--border2);
-            border-bottom: 3px solid var(--key-bot);
-            background: linear-gradient(180deg, var(--key-top) 0%, var(--key-bg) 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.76rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            transition: background 0.08s, border-color 0.08s, transform 0.05s,
-                        border-bottom-width 0.05s, box-shadow 0.05s, opacity 0.15s, color 0.12s;
-        }
-
-        .key:hover:not(:disabled) {
-            background: linear-gradient(180deg, #262640 0%, #1c1c34 100%);
-            border-color: #303055;
-        }
-
-        .key:active:not(:disabled) {
-            transform: translateY(2px);
-            border-bottom-width: 1px;
-            box-shadow: none;
-        }
-
-        .key.hit {
-            background: linear-gradient(180deg, rgba(0,204,116,0.14) 0%, rgba(0,204,116,0.08) 100%);
-            border-color: rgba(0,204,116,0.35);
-            border-bottom-color: rgba(0,204,116,0.15);
-            color: var(--green);
-            cursor: default;
-        }
-
-        .key.miss {
-            opacity: 0.2;
-            cursor: default;
-            text-decoration: line-through;
-        }
-
-        .key:disabled { cursor: default; }
 
         /* ── VS DIVIDER ── */
         .vs-divider {
@@ -350,7 +267,7 @@
         }
 
         /* ── OPP CHIPS ── */
-        .chips-area { display: flex; flex-direction: column; gap: 6px; }
+        .chips-area { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 
         .chips-label {
             font-size: 0.54rem;
@@ -375,11 +292,83 @@
             font-size: 0.7rem;
             font-weight: 700;
         }
-
         .chip.hit  { background: rgba(0,204,116,0.12); color: var(--green); border: 1px solid rgba(0,204,116,0.28); }
         .chip.miss { background: transparent; color: var(--muted); border: 1px solid var(--border); text-decoration: line-through; }
 
-        /* Shake animation */
+        /* ── KEYBOARD ── */
+        #keyboard-section {
+            flex-shrink: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 14px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .key-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .key {
+            width: 44px;
+            height: 50px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 4px solid rgba(0,0,0,0.55);
+            background: linear-gradient(170deg, #20203c 0%, #16162e 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+            color: rgba(240,240,255,0.9);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition:
+                background 0.08s, border-color 0.08s,
+                transform 0.06s, border-bottom-width 0.06s,
+                box-shadow 0.06s, opacity 0.15s, color 0.12s;
+        }
+
+        .key:hover:not(:disabled) {
+            background: linear-gradient(170deg, #2a2a50 0%, #1e1e3e 100%);
+            border-color: rgba(255,255,255,0.13);
+            transform: translateY(-1px);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.11),
+                0 6px 14px rgba(0,0,0,0.35);
+        }
+
+        .key:active:not(:disabled) {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        .key.hit {
+            background: linear-gradient(170deg, rgba(0,204,116,0.18) 0%, rgba(0,204,116,0.1) 100%);
+            border-color: rgba(0,204,116,0.38);
+            border-bottom-color: rgba(0,204,116,0.18);
+            color: var(--green);
+            box-shadow: inset 0 1px 0 rgba(0,204,116,0.15), 0 0 10px rgba(0,204,116,0.08);
+            cursor: default;
+        }
+
+        .key.miss {
+            opacity: 0.16;
+            cursor: default;
+            text-decoration: line-through;
+        }
+
+        .key:disabled { cursor: default; }
+
+        /* Shake */
         @keyframes shake {
             0%,100% { transform: translateX(0); }
             20%     { transform: translateX(-7px); }
@@ -387,7 +376,6 @@
             60%     { transform: translateX(-4px); }
             80%     { transform: translateX(4px); }
         }
-
         .shake { animation: shake 0.3s ease; }
 
         /* ── END OVERLAY ── */
@@ -400,7 +388,6 @@
             align-items: center;
             justify-content: center;
         }
-
         #end-overlay.show { display: flex; }
 
         .end-card {
@@ -413,7 +400,6 @@
             width: 90%;
             animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
         @keyframes popIn {
             from { opacity: 0; transform: scale(0.82); }
             to   { opacity: 1; transform: scale(1); }
@@ -429,7 +415,6 @@
             border-radius: 20px;
             margin-bottom: 20px;
         }
-
         .end-badge.won  { color: var(--green); background: rgba(0,204,116,0.1);  border: 1px solid rgba(0,204,116,0.28); }
         .end-badge.lost { color: var(--red);   background: rgba(255,64,64,0.1);  border: 1px solid rgba(255,64,64,0.28); }
 
@@ -452,7 +437,7 @@
             padding: 12px 34px;
             background: var(--red);
             border: none;
-            border-bottom: 3px solid #c02020;
+            border-bottom: 3px solid #aa1c1c;
             border-radius: 10px;
             color: #fff;
             font-family: 'Inter', sans-serif;
@@ -461,21 +446,21 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: opacity 0.15s, transform 0.1s;
+            transition: opacity 0.15s, transform 0.06s, border-bottom-width 0.06s;
         }
-
         #play-again-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
         #play-again-btn:active { transform: translateY(2px); border-bottom-width: 1px; }
 
         /* ── RESPONSIVE ── */
-        @media (max-width: 620px) {
-            body { overflow: auto; height: auto; }
-            #game-screen { overflow: auto; height: auto; }
+        @media (max-width: 600px) {
+            body, #game-screen { overflow: auto; height: auto; }
             .arena { flex-direction: column; overflow: visible; }
             .vs-divider { width: 100%; height: 1px; }
             .vs-badge { top: 0; left: 50%; transform: translate(-50%, -50%); }
-            .player-side, .opp-side { padding: 14px 16px; }
-            .key { width: 29px; height: 34px; font-size: 0.7rem; }
+            .player-side, .opp-side { padding: 14px 16px; justify-content: flex-start; }
+            .key { width: 31px; height: 40px; font-size: 0.72rem; }
+            .key-row { gap: 4px; }
+            #keyboard-section { padding: 10px 8px 14px; gap: 5px; }
         }
     </style>
 </head>
@@ -502,14 +487,13 @@
 
         <!-- YOUR SIDE -->
         <div class="player-side">
-
             <div class="side-header">
                 <span class="side-label you">Voce</span>
                 <div class="err-dots" id="your-err-dots"></div>
             </div>
 
             <div class="hangman-wrap">
-                <svg id="your-hg" width="160" height="178" viewBox="0 0 200 220">
+                <svg id="your-hg" width="170" height="190" viewBox="0 0 200 220">
                     <line x1="10"  y1="212" x2="190" y2="212" stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
@@ -524,21 +508,12 @@
             </div>
 
             <div class="word-row you-word" id="your-word"></div>
-
             <div class="side-status" id="your-status-badge"></div>
 
             <div class="hint-wrap">
                 <button id="hint-btn">Usar dica</button>
                 <span class="hint-sub" id="hint-sub">1 disponivel</span>
             </div>
-
-            <!-- Keyboard inside your side -->
-            <div class="keyboard-wrap">
-                <div class="key-row" id="row-1"></div>
-                <div class="key-row" id="row-2"></div>
-                <div class="key-row" id="row-3"></div>
-            </div>
-
         </div>
 
         <!-- VS -->
@@ -546,14 +521,13 @@
 
         <!-- OPPONENT SIDE -->
         <div class="opp-side">
-
             <div class="side-header">
                 <span class="side-label opp">Oponente</span>
                 <div class="err-dots" id="opp-err-dots"></div>
             </div>
 
             <div class="hangman-wrap">
-                <svg id="opp-hg" width="128" height="142" viewBox="0 0 200 220">
+                <svg id="opp-hg" width="136" height="152" viewBox="0 0 200 220">
                     <line x1="10"  y1="212" x2="190" y2="212" stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <line x1="50"  y1="212" x2="50"  y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
                     <line x1="50"  y1="10"  x2="140" y2="10"  stroke="#1e1e38" stroke-width="5" stroke-linecap="round"/>
@@ -568,17 +542,23 @@
             </div>
 
             <div class="word-row opp-word" id="opp-word"></div>
-
             <div class="side-status" id="opp-status-badge"></div>
 
             <div class="chips-area">
                 <div class="chips-label">Letras tentadas</div>
                 <div class="chips-row" id="opp-chips"></div>
             </div>
-
         </div>
 
     </div>
+
+    <!-- Keyboard — full width at bottom -->
+    <div id="keyboard-section">
+        <div class="key-row" id="row-1"></div>
+        <div class="key-row" id="row-2"></div>
+        <div class="key-row" id="row-3"></div>
+    </div>
+
 </div>
 
 <!-- End overlay -->
@@ -615,7 +595,6 @@
     let serverIndex = 0;
     let playerId    = localStorage.getItem('hangman_player_id') || '';
 
-    // Build error dots
     ['your-err-dots','opp-err-dots'].forEach(id => {
         const el = document.getElementById(id);
         for (let i = 0; i < 6; i++) {
@@ -625,7 +604,6 @@
         }
     });
 
-    // Build keyboard
     QWERTY.forEach((row, i) => {
         const el = document.getElementById('row-' + (i + 1));
         row.forEach(letter => {
@@ -638,32 +616,23 @@
         });
     });
 
-    // ── Connection ──────────────────────────────────────────────────────────
-
     function connectToServer() {
         const url = SERVER_LIST[serverIndex];
         setStatus('Conectando...');
         if (socket) { socket.off(); socket.disconnect(); }
-
         socket = io(url, { query: { player_id: playerId }, reconnection: false, timeout: 5000 });
-
-        socket.on('connect', () => {
-            setStatus('Online' + (SERVER_LIST.length > 1 ? ' · srv' + (serverIndex + 1) : ''));
-        });
+        socket.on('connect', () => setStatus('Online' + (SERVER_LIST.length > 1 ? ' · srv' + (serverIndex + 1) : '')));
         socket.on('disconnect',    () => { if (!gameOver) { setStatus('Reconectando...'); switchServer(); } });
         socket.on('connect_error', () => switchServer());
-
         socket.on('connected', ({ player_id }) => {
             playerId = player_id;
             localStorage.setItem('hangman_player_id', player_id);
         });
-
         socket.on('waiting', ({ position }) => {
             document.getElementById('waiting-screen').style.display = 'flex';
             document.getElementById('game-screen').style.display    = 'none';
             document.getElementById('queue-pos').textContent = 'Posicao na fila: ' + position;
         });
-
         socket.on('game_state', handleGameState);
     }
 
@@ -675,15 +644,10 @@
 
     function setStatus(msg) { document.getElementById('conn-status').textContent = msg; }
 
-    // ── Rendering ───────────────────────────────────────────────────────────
-
     function updateHangman(parts, count, doShake) {
-        parts.forEach((id, i) => {
-            document.getElementById(id).style.display = i < count ? '' : 'none';
-        });
+        parts.forEach((id, i) => document.getElementById(id).style.display = i < count ? '' : 'none');
         if (doShake) {
-            const svgId = parts[0].startsWith('y') ? 'your-hg' : 'opp-hg';
-            const svg = document.getElementById(svgId);
+            const svg = document.getElementById(parts[0].startsWith('y') ? 'your-hg' : 'opp-hg');
             svg.classList.remove('shake');
             void svg.offsetWidth;
             svg.classList.add('shake');
@@ -693,7 +657,7 @@
 
     function updateDots(id, count, cls) {
         document.getElementById(id).querySelectorAll('.err-dot').forEach((d, i) => {
-            d.classList.remove('on-you', 'on-opp');
+            d.classList.remove('on-you','on-opp');
             if (i < count) d.classList.add(cls);
         });
     }
@@ -706,12 +670,9 @@
             letters.forEach(() => {
                 const slot = document.createElement('div');
                 slot.className = 'letter-slot';
-                const ch   = document.createElement('div');
-                ch.className = 'letter-char';
-                const line = document.createElement('div');
-                line.className = 'letter-line';
-                slot.appendChild(ch);
-                slot.appendChild(line);
+                const ch = document.createElement('div'); ch.className = 'letter-char';
+                const ln = document.createElement('div'); ln.className = 'letter-line';
+                slot.appendChild(ch); slot.appendChild(ln);
                 el.appendChild(slot);
             });
         }
@@ -726,7 +687,7 @@
         guessed.forEach(l => {
             const btn = document.getElementById('key-' + l);
             if (!btn) return;
-            btn.classList.remove('hit', 'miss');
+            btn.classList.remove('hit','miss');
             btn.classList.add(word && word.includes(l) ? 'hit' : 'miss');
             btn.disabled = true;
         });
@@ -747,13 +708,12 @@
     function showSideStatus(elId, status) {
         const el = document.getElementById(elId);
         el.className = 'side-status';
-        if (status === 'won')  { el.classList.add('show', 'won');  el.textContent = 'Venceu'; }
-        if (status === 'lost') { el.classList.add('show', 'lost'); el.textContent = 'Perdeu'; }
+        if (status === 'won')  { el.classList.add('show','won');  el.textContent = 'Venceu'; }
+        if (status === 'lost') { el.classList.add('show','lost'); el.textContent = 'Perdeu'; }
     }
 
     function handleGameState(state) {
         if (gameOver) return;
-
         document.getElementById('waiting-screen').style.display = 'none';
         document.getElementById('game-screen').style.display    = 'flex';
 
@@ -761,8 +721,7 @@
 
         const wrongNow = state.wrong_count || 0;
         const doShake  = !isFirstState && wrongNow > prevWrong;
-        prevWrong    = wrongNow;
-        isFirstState = false;
+        prevWrong = wrongNow; isFirstState = false;
 
         renderWord('your-word', state.word_state);
         updateHangman(Y_PARTS, wrongNow, doShake);
@@ -781,11 +740,9 @@
         }
 
         const strip = document.getElementById('alert-strip');
-        strip.style.display = 'none';
-        strip.className = '';
+        strip.style.display = 'none'; strip.className = '';
         if (state.opponent_status === 'disconnected') {
-            strip.style.display = 'block';
-            strip.className = 'disc';
+            strip.style.display = 'block'; strip.className = 'disc';
             strip.textContent = 'Oponente desconectou — 30 segundos para reconectar';
         }
 
@@ -799,12 +756,10 @@
             localStorage.removeItem('hangman_player_id');
             document.querySelectorAll('.key').forEach(k => k.disabled = true);
             hintBtn.disabled = true;
-
             document.getElementById('end-overlay').classList.add('show');
 
             const badge = document.getElementById('end-badge');
             const title = document.getElementById('end-title');
-
             if (state.status === 'won') {
                 badge.className = 'end-badge won'; badge.textContent = 'Vitoria';
                 title.textContent = 'Voce venceu!';
@@ -812,13 +767,10 @@
                 badge.className = 'end-badge lost'; badge.textContent = 'Derrota';
                 title.textContent = 'Voce perdeu.';
             }
-
             if (state.full_word)
                 document.getElementById('end-word').textContent = 'A palavra era  ' + state.full_word;
         }
     }
-
-    // ── Input ───────────────────────────────────────────────────────────────
 
     function sendGuess(letter) {
         if (!socket || gameOver) return;
