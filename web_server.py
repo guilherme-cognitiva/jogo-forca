@@ -60,6 +60,7 @@ def on_p2p_state_received(state_dict):
         waiting_queue.clear()
         waiting_queue.extend(state_dict.get('waiting_queue', []))
         logging.info("Estado sincronizado via P2P.")
+        check_matchmaking()
         for player_id, sid in list(player_to_sid.items()):
             if player_id in waiting_queue:
                 pos = waiting_queue.index(player_id) + 1
@@ -111,12 +112,26 @@ def notify_all_in_game(game):
 def check_matchmaking():
     """Deve ser chamado COM state_lock held."""
     while len(waiting_queue) >= 2:
-        p1_id = waiting_queue.pop(0)
-        p2_id = waiting_queue.pop(0)
-        new_game = game_engine.create_game(p1_id, p2_id)
-        games[new_game.game_id] = new_game
-        logging.info(f"Match criado: {p1_id[:8]} vs {p2_id[:8]}")
-        notify_all_in_game(new_game)
+        p1_id = waiting_queue[0]
+        p2_id = waiting_queue[1]
+        # Evita criar jogo duplicado: só cria se pelo menos um jogador for local
+        # O servidor que tem o p1 localmente é o "dono" desse match
+        if p1_id not in player_to_sid and p2_id not in player_to_sid:
+            break
+        waiting_queue.pop(0)
+        waiting_queue.pop(0)
+        try:
+            new_game = game_engine.create_game(p1_id, p2_id)
+            games[new_game.game_id] = new_game
+            logging.info(f"Match criado: {p1_id[:8]} vs {p2_id[:8]}")
+            notify_all_in_game(new_game)
+            _sync_state()
+        except Exception as e:
+            logging.error(f"Erro ao criar match: {e}")
+            # Devolve os jogadores para a fila em caso de erro
+            waiting_queue.insert(0, p2_id)
+            waiting_queue.insert(0, p1_id)
+            break
 
 
 # ---------------------------------------------------------------------------
